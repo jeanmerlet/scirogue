@@ -24,7 +24,7 @@ class PlayState(BaseState):
         super().__init__(term)
         self.input = Input("play")
         self.map = Map(80, 60)
-        self.map.generate_bsp(seed=None, reflect="none")
+        self.map.generate_bsp(seed=None, reflect="h")
         self.world = World()
         player = self.world.create()
         startx, starty = self.map.px, self.map.py

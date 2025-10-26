@@ -8,7 +8,7 @@ class Map:
         self.walls = np.zeros((w, h), dtype=np.bool_)
         self.doors = np.zeros((w, h), dtype=np.bool_)
         self.block = np.zeros((w, h), dtype=np.bool_)
-        # tmp
+        # for debugging
         self.centers = np.zeros((w, h), dtype=np.bool_)
         self.peris = np.zeros((w, h), dtype=np.bool_)
 
@@ -23,21 +23,22 @@ class Map:
         px, py = rng.choice(list(floor))
         return px, py
 
-    def generate_bsp(self, seed=None, reflect="none",
+    def generate_bsp(self, seed=None,
                      min_leaf=6, max_leaf=20,
-                     min_room=1, max_room=10, border=1):
+                     min_rsize=1, max_rsize=10,
+                     reflect="none", border=1):
         from .bsp import generate_bsp
         centers, floor, walls, doors, peris = generate_bsp(
-            self.w, self.h,
-            seed=seed,
+            self.w, self.h, seed=seed,
             min_leaf=min_leaf, max_leaf=max_leaf,
-            min_room=min_room, max_room=max_room,
-            border=border,
-            reflect=reflect
+            min_rsize=min_rsize, max_rsize=max_rsize,
+            border=border, reflect=reflect
         )
         # add floors
         fx, fy = zip(*floor)
         self.floor[list(fx), list(fy)] = True
+        # player starts on a random floor tile
+        self.px, self.py = self._pick_player_start(floor, seed)
         # add walls
         wx, wy = zip(*walls)
         self.walls[list(wx), list(wy)] = True
@@ -45,21 +46,19 @@ class Map:
         # add doors
         dx, dy = zip(*doors)
         self.doors[list(dx), list(dy)] = True
+        # room centers for debugging
+        cx, cy = zip(*centers)
+        self.centers[list(cx), list(cy)] = True
+        # room perimeters for debugging
+        px, py = zip(*peris)
+        self.peris[list(px), list(py)] = True
         # map edge blocks
         # TODO: change this to map space border later
-        # TODO: move to wrapper to aall procgen methods
+        # TODO: move to wrapper around all procgen methods
         self.block[0, :]  = True
         self.block[-1, :] = True
         self.block[:, 0]  = True
         self.block[:, -1] = True
-        # player starts on a random floor tile
-        self.px, self.py = self._pick_player_start(floor, seed)
-        # tmp center check
-        cx, cy = zip(*centers)
-        self.centers[list(cx), list(cy)] = True
-        # tmp peri check
-        px, py = zip(*peris)
-        self.peris[list(px), list(py)] = True
 
     def draw(self, term):
         xs, ys = term.xs, term.ys # x and y scale factors
@@ -78,12 +77,13 @@ class Map:
         doorx, doory = np.nonzero(self.doors)
         for x, y in zip(doorx, doory):
             term.put(xs * int(x), ys * int(y), "+")
-        # centers
+        # centers (for debugging)
         term.color("red")
         centerx, centery = np.nonzero(self.centers)
         for x, y in zip(centerx, centery):
+            break
             term.put(xs * int(x), ys * int(y), "*")
-        # peris
+        # perimeters (for debugging)
         term.color("green")
         perix, periy = np.nonzero(self.peris)
         for x, y in zip(perix, periy):

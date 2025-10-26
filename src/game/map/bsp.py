@@ -13,13 +13,13 @@ class Room:
         return (self.x <= x < self.x + self.w and
                 self.y <= y < self.y + self.h)
 
-    def perimeter(self):
-        # cornerless perimeter
+    def perimeter(self, corners=False):
+        c = 1 if corners else 0
         perimeter = set()
-        for x in range(self.x, self.x + self.w):
+        for x in range(self.x - c, self.x + self.w + c):
             perimeter.add((x, self.y - 1))
             perimeter.add((x, self.y + self.h))
-        for y in range(self.y, self.y + self.h):
+        for y in range(self.y - c, self.y + self.h + c):
             perimeter.add((self.x - 1 , y))
             perimeter.add((self.x + self.w, y))
         return perimeter
@@ -73,13 +73,13 @@ def _split(node, rng, min_leaf=6, max_leaf=20):
     _split(node.left, rng, min_leaf, max_leaf)
     _split(node.right, rng, min_leaf, max_leaf)
 
-def _carve_rooms(node, rng, min_room=1, max_room=10, border=1):
+def _carve_rooms(node, rng, min_rsize=1, max_rsize=10, border=1):
     """Assign a room to each leaf BSP node."""
     if node.left or node.right:
-        if node.left: _carve_rooms(node.left, rng, min_room,
-                                   max_room, border)
-        if node.right: _carve_rooms(node.right, rng, min_room,
-                                    max_room, border)
+        if node.left: _carve_rooms(node.left, rng, min_rsize,
+                                   max_rsize, border)
+        if node.right: _carve_rooms(node.right, rng, min_rsize,
+                                    max_rsize, border)
         return
 
     # leaf: pick a room size and position it
@@ -87,13 +87,13 @@ def _carve_rooms(node, rng, min_room=1, max_room=10, border=1):
     leaf = node.rect
     usable_w = max(0, leaf.w - 2 * border)
     usable_h = max(0, leaf.h - 2 * border)
-    rw = min(max_room, usable_w)
-    rh = min(max_room, usable_h)
-    if rw < min_room or rh < min_room:
+    rw = min(max_rsize, usable_w)
+    rh = min(max_rsize, usable_h)
+    if rw < min_rsize or rh < min_rsize:
         node.room = None
         return
-    w = rng.randint(min_room, rw)
-    h = rng.randint(min_room, rh)
+    w = rng.randint(min_rsize, rw)
+    h = rng.randint(min_rsize, rh)
     # rooms can only be 1x1, not 1xn or nx1
     if w == 1 or h == 1:
         w = h = 1
@@ -125,11 +125,9 @@ def _connect_rooms(node, floor):
     # recursively connect rooms along the BSP tree
     if not (node.left and node.right):
         return
-
     # connect deepest children first
     _connect_rooms(node.left, floor)
     _connect_rooms(node.right, floor)
-
     # find a room in left subtree and a room in right subtree
     left_rooms, right_rooms = [], []
     _collect_rooms(node.left, left_rooms)
@@ -139,7 +137,7 @@ def _connect_rooms(node, floor):
     # pick nearest pair
     _carve_corridor(floor, left_rooms[0], right_rooms[0])
 
-def _outline_walls(floor, w, h):
+def _place_walls(floor, w, h):
     walls = set()
     neigh = (
         (-1,-1), (0,-1), (1,-1),
@@ -149,70 +147,16 @@ def _outline_walls(floor, w, h):
     for (x, y) in floor:
         for dx, dy in neigh:
             nx, ny = x + dx, y + dy
-            if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in floor:
+            if (nx, ny) not in floor:
                 walls.add((nx, ny))
     return walls
 
-def _reflect_floor(floor, w, h, mode):
-    if mode == "none":
-        return floor
-    reflected = set(floor)
-    if mode == "h":
-        for (x, y) in list(floor):
-            rx = (w - 1) - x
-            reflected.add((rx, y))
-    if mode == "v":
-        for (x, y) in list(floor):
-            ry = (h - 1) - y
-            reflected.add((x, ry))
-    if mode == "hv":
-        for (x, y) in list(floor):
-            rx = (w - 1) - x
-            reflected.add((rx, y))
-        for (x, y) in list(reflected):
-            ry = (h - 1) - y
-            reflected.add((x, ry))
-    if mode == "diag_nwse":
-        for (x, y) in list(floor):
-            rx = (w - 1) - x
-            ry = (h - 1) - y
-            reflected.add((rx, ry))
-    if mode == "diag_swne":
-        reflected = set()
-        for (x, y) in list(floor):
-            rx = (w - 1) - x
-            reflected.add((rx, y))
-        for (x, y) in list(reflected):
-            rx = (w - 1) - x
-            ry = (h - 1) - y
-            reflected.add((rx, ry))
-    return reflected
-
-def _reflect_rooms(rooms, w, h, mode):
-    if mode == "none":
-        return rooms
-    out = set()
-    for r in rooms:
-        xs = [r.x]
-        ys = [r.y]
-        if mode == "h":
-            xs.append((w - r.x - r.w))
-        if mode == "v":
-            ys.append((h - r.y - r.h))
-        # add in original and reflected rooms
-        for xx in xs:
-            for yy in ys:
-                out.add((xx, yy, r.w, r.h))
-    # back to Rects
-    return [Room(x, y, w_, h_) for (x, y, w_, h_) in out]
-
-
-
 def _place_doors(rooms, floor, walls):
     doors = set()
+    # max doors per room side if not replacing floor
+    dmax = 1
     for r in rooms:
         peri = r.perimeter()
-        # max 2 doors per room side if not replacing floor
         n, s, e, w = 0, 0, 0, 0
         for (x, y) in peri:
             place_door = False
@@ -223,12 +167,12 @@ def _place_doors(rooms, floor, walls):
                 # count north doors
                 if r.is_inside(x, y-1):
                     n += 1
-                    if n > 2 and (x, y) not in floor:
+                    if n > dmax and (x, y) not in floor:
                         place_door = False
                 # count south doors
                 if r.is_inside(x, y+1):
                     s += 1
-                    if s > 2 and (x, y) not in floor:
+                    if s > dmax and (x, y) not in floor:
                         place_door = False
             # east-west doors
             if (((x-1, y) in floor and (x+1, y) in floor) and not
@@ -237,12 +181,12 @@ def _place_doors(rooms, floor, walls):
                 # count east doors
                 if r.is_inside(x-1, y):
                     e += 1
-                    if e > 2 and (x, y) not in floor:
+                    if e > dmax and (x, y) not in floor:
                         place_door = False
                 # count west doors
                 if r.is_inside(x+1, y):
                     w += 1
-                    if w > 2 and (x, y) not in floor:
+                    if w > dmax and (x, y) not in floor:
                         place_door = False
             if place_door:
                 if (x, y) in walls:
@@ -250,43 +194,123 @@ def _place_doors(rooms, floor, walls):
                 doors.add((x, y))
     return doors
 
+def _reflect_tiles(tiles, w, h, gaph, gapv, mode):
+    reflected = []
+    for tileset in tiles:
+        if mode == "none":
+            return tiles
+        ref_tileset = set(tileset)
+        if mode in ["h", "hv"]:
+            for (x, y) in list(tileset):
+                rx = w - x - gaph
+                ref_tileset.add((rx, y))
+        if mode == "v":
+            for (x, y) in list(tileset):
+                ry = h - y - gapv
+                ref_tileset.add((x, ry))
+        if mode == "hv":
+            for (x, y) in list(ref_tileset):
+                ry = h - y - gapv
+                ref_tileset.add((x, ry))
+        reflected.append(ref_tileset)
+    return reflected
+
+def _reflect_rooms(rooms, w, h, gaph, gapv, mode):
+    if mode == "none":
+        return rooms
+    out = set()
+    for r in rooms:
+        xs = [r.x]
+        ys = [r.y]
+        if mode in ["h", "hv"]:
+            xs.append((w - r.x - r.w - gaph + 1))
+        if mode in ["v", "hv"]:
+            ys.append((h - r.y - r.h - gapv + 1))
+        for x in xs:
+            for y in ys:
+                out.add((x, y, r.w, r.h))
+    return [Room(x, y, w, h) for (x, y, w, h) in out]
+
+def _connect_center(floor, walls, doors, w, h, edgeh, edgev, mode):
+    max_doors = 2
+    if mode == "none":
+        return doors
+    if mode in ["h", "hv"]:
+        num_doors = 0
+        mid_walls = [xy for xy in walls if xy[0] == edgeh]
+        for (x, y) in  mid_walls:
+            if num_doors == max_doors: break
+            if (((x-1, y) in floor and (x+1, y) in floor) and not
+               ((x, y-1) in floor or (x, y+1) in floor)):
+                walls.remove((x, y))
+                doors.add((x, y))
+                num_doors += 1
+    if mode in ["v", "hv"]:
+        num_doors = 0
+        mid_walls = [xy for xy in walls if xy[1] == edgev]
+        for (x, y) in  mid_walls:
+            if num_doors == max_doors: break
+            if (((x, y-1) in floor and(x, y+1) in floor) and not
+               ((x-1, y) in floor or (x+1, y) in floor)):
+                walls.remove((x, y))
+                doors.add((x, y))
+                num_doors += 1
+    return doors
+
 def generate_bsp(w, h, seed=None,
                  min_leaf=6, max_leaf=20,
-                 min_room=1, max_room=10,
+                 min_rsize=1, max_rsize=10,
                  border=1, reflect="none",
-                 margin=None, margin_min=5, margin_max=10):
+                 margin_min=5, margin_max=10):
     rng = random.Random(seed)
-    if margin is None:
-        margin = rng.randint(margin_min, margin_max)
+    margin = rng.randint(margin_min, margin_max)
+    # allow for smaller margins if map is tiny
     max_allowed = min((w - 2) // 2, (h - 2) // 2) 
     margin = max(0, min(margin, max_allowed))
-
-    # Build the BSP only inside the inner rectangle
+    # halve width and/or height if reflecting
+    mapw = w
+    maph = h
+    if reflect in ["h", "hv"]:
+        mapw = w // 2
+    if reflect in ["v", "hv"]:
+        maph = h // 2
+    # build the BSP only inside the inner rectangle
     inner_x = margin
     inner_y = margin
-    inner_w = w - 2 * margin
-    inner_h = h - 2 * margin
-
+    inner_w = mapw - 2 * margin
+    inner_h = maph - 2 * margin
+    if reflect in ["h", "hv"]:
+        inner_w = mapw - margin
+    if reflect in ["v", "hv"]:
+        inner_h = maph - margin
+    # run BSP
     root = BSPNode(Room(inner_x + 1, inner_y + 1,
                         inner_w - 2, inner_h - 2))
     _split(root, rng, min_leaf=min_leaf, max_leaf=max_leaf)
-    _carve_rooms(root, rng, min_room=min_room,
-                 max_room=max_room, border=border)
+    _carve_rooms(root, rng, min_rsize=min_rsize,
+                 max_rsize=max_rsize, border=border)
     rooms = []
     _collect_rooms(root, rooms)
-
+    # add floor based on rooms
     floor = set()
     for r in rooms:
-        for yy in range(r.y, r.y + r.h):
-            for xx in range(r.x, r.x + r.w):
-                floor.add((xx, yy))
-
+        for x in range(r.x, r.x + r.w):
+            for y in range(r.y, r.y + r.h):
+                floor.add((x, y))
     _connect_rooms(root, floor)
-    floor = _reflect_floor(floor, w, h, reflect)
-    rooms = _reflect_rooms(rooms, w, h, reflect)
-    centers = [r.center() for r in rooms]
-    walls = _outline_walls(floor, w, h)
+    walls = _place_walls(floor, w, h)
     doors = _place_doors(rooms, floor, walls)
+    # reflect if reflecting
+    edgeh = max([xy[0] for xy in walls])
+    edgev = max([xy[1] for xy in walls])
+    gaph = 2 * (mapw - edgeh)
+    gapv = 2 * (maph - edgev)
+    tiles = [floor, walls, doors]
+    floor, walls, doors = _reflect_tiles(tiles, w, h, gaph, gapv, reflect)
+    rooms = _reflect_rooms(rooms, w, h, gaph, gapv, reflect)
+    doors = _connect_center(floor, walls, doors, w, h, edgeh, edgev, reflect)
+    # for debugging
+    centers = [r.center() for r in rooms]
     peris = set()
     for r in rooms:
         for p in r.perimeter():
