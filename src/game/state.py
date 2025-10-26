@@ -30,7 +30,7 @@ class PlayState(BaseState):
         player = self.world.create()
         startx, starty = self.map.px, self.map.py
         self.world.add(player, Position(startx, starty))
-        self.world.add(player, FOVRadius(8))
+        self.world.add(player, FOVRadius(10))
         self.world.add(player, Renderable("@", "amber"))
         self.world.add(player, Actor())
         self.player = player

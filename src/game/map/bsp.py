@@ -189,8 +189,28 @@ def _place_doors(rooms, floor, walls):
                     if w > dmax and (x, y) not in floor:
                         place_door = False
             if place_door:
+                if (x, y) in walls:
+                    walls.remove((x, y))
                 doors.add((x, y))
     return doors
+
+def _place_windows(rooms, walls, rng):
+    windows = set()
+    for r in rooms:
+        # 0 to 3 windows per room
+        num_w = 0
+        max_w = rng.randint(0, 3)
+        counter = 0
+        peri = list(r.perimeter(corners=True))
+        while num_w < max_w:
+            xy = rng.choice(peri)
+            if (xy in walls) and (xy not in windows):
+                walls.remove(xy)
+                windows.add(xy)
+                num_w += 1
+            counter += 1
+            if counter == 10: break
+    return windows
 
 def _reflect_tiles(tiles, w, h, gaph, gapv, mode):
     reflected = []
@@ -298,13 +318,15 @@ def generate_bsp(w, h, seed=None,
     _connect_rooms(root, floor)
     walls = _place_walls(floor, w, h)
     doors = _place_doors(rooms, floor, walls)
+    windows = _place_windows(rooms, walls, rng)
     # reflect if reflecting
     edgeh = max([xy[0] for xy in walls])
     edgev = max([xy[1] for xy in walls])
     gaph = 2 * (mapw - edgeh)
     gapv = 2 * (maph - edgev)
-    tiles = [floor, walls, doors]
-    floor, walls, doors = _reflect_tiles(tiles, w, h, gaph, gapv, reflect)
+    tiles = [floor, walls, doors, windows]
+    floor, walls, doors, windows = _reflect_tiles(
+        tiles, w, h, gaph, gapv, reflect)
     rooms = _reflect_rooms(rooms, w, h, gaph, gapv, reflect)
     doors = _connect_center(floor, walls, doors, w, h, edgeh, edgev, reflect)
     # for debugging
@@ -313,4 +335,4 @@ def generate_bsp(w, h, seed=None,
     for r in rooms:
         for p in r.perimeter():
             peris.add(p)
-    return centers, floor, walls, doors, peris
+    return floor, walls, doors, windows, centers, peris

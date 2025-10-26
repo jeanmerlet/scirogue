@@ -8,8 +8,10 @@ class Map:
         self.walls = np.zeros((w, h), dtype=np.bool_)
         self.doors_open = np.zeros((w, h), dtype=np.bool_)
         self.doors_closed = np.zeros((w, h), dtype=np.bool_)
+        self.windows = np.zeros((w, h), dtype=np.bool_)
         self.block = np.zeros((w, h), dtype=np.bool_)
         self.visible = np.zeros((w, h), dtype=np.bool_)
+        self.explored = np.zeros((w, h), dtype=np.bool_)
         # for debugging
         self.centers = np.zeros((w, h), dtype=np.bool_)
         self.peris = np.zeros((w, h), dtype=np.bool_)
@@ -25,6 +27,7 @@ class Map:
         self.walls.fill(False)
         self.doors_open.fill(False)
         self.doors_closed.fill(False)
+        self.windows.fill(False)
         self.block.fill(False)
         self.centers.fill(False)
         self.peris.fill(False)
@@ -53,7 +56,7 @@ class Map:
                      min_rsize=1, max_rsize=10,
                      reflect="none", border=1):
         from .bsp import generate_bsp
-        centers, floor, walls, doors_closed, peris = generate_bsp(
+        floor, walls, doors_closed, windows, centers, peris = generate_bsp(
             self.w, self.h, seed=seed,
             min_leaf=min_leaf, max_leaf=max_leaf,
             min_rsize=min_rsize, max_rsize=max_rsize,
@@ -74,6 +77,11 @@ class Map:
         self.doors_closed[list(dx), list(dy)] = True
         self.block[list(dx), list(dy)] = True
         self.walls[list(dx), list(dy)] = False
+        # add windows
+        wx, wy = zip(*windows)
+        self.windows[list(wx), list(wy)] = True
+        self.block[list(wx), list(wy)] = True
+        self.walls[list(dx), list(dy)] = False
         # room centers for debugging
         cx, cy = zip(*centers)
         self.centers[list(cx), list(cy)] = True
@@ -82,15 +90,26 @@ class Map:
         self.peris[list(px), list(py)] = True
 
     def draw(self, term):
+        #self.visible = np.ones((self.w, self.h), dtype=np.bool_)
         xs, ys = term.xs, term.ys # x and y scale factors
         # floors
-        term.color("darker grey")
+        term.color("grey")
         fx, fy = np.nonzero(self.floor & self.visible)
+        for x, y in zip(fx, fy):
+            term.put(xs * int(x), ys * int(y), ".")
+        term.color("darker grey")
+        fx, fy = np.nonzero(self.floor & ~self.visible &
+                            self.explored)
         for x, y in zip(fx, fy):
             term.put(xs * int(x), ys * int(y), ".")
         # walls
         term.color("grey")
         wx, wy = np.nonzero(self.walls & self.visible)
+        for x, y in zip(wx, wy):
+            term.put(xs * int(x), ys * int(y), "#")
+        term.color("darker grey")
+        wx, wy = np.nonzero(self.walls & ~self.visible &
+                            self.explored)
         for x, y in zip(wx, wy):
             term.put(xs * int(x), ys * int(y), "#")
         # doors
@@ -100,7 +119,26 @@ class Map:
             term.put(xs * int(x), ys * int(y), "+")
         dx, dy = np.nonzero(self.doors_open & self.visible)
         for x, y in zip(dx, dy):
-            term.put(xs * int(x), ys * int(y), "/")
+            term.put(xs * int(x), ys * int(y), "-")
+        term.color("darker grey")
+        dx, dy = np.nonzero(self.doors_closed & ~self.visible &
+                            self.explored)
+        for x, y in zip(dx, dy):
+            term.put(xs * int(x), ys * int(y), "+")
+        dx, dy = np.nonzero(self.doors_open & ~self.visible &
+                            self.explored)
+        for x, y in zip(dx, dy):
+            term.put(xs * int(x), ys * int(y), "-")
+        # windows
+        term.color("dark blue")
+        wx, wy = np.nonzero(self.windows & self.visible)
+        for x, y in zip(wx, wy):
+            term.put(xs * int(x), ys * int(y), "o")
+        term.color("darker grey")
+        wx, wy = np.nonzero(self.windows & ~self.visible &
+                            self.explored)
+        for x, y in zip(wx, wy):
+            term.put(xs * int(x), ys * int(y), "o")
         # centers (for debugging)
         term.color("red")
         cx, cy = np.nonzero(self.centers & self.visible)

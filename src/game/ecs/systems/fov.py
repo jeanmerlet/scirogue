@@ -51,10 +51,12 @@ def _cast_light(visible, opaque, ox, oy, radius,
 
 def do_fov(x, y, radius, game_map):
     visible = game_map.visible
+    visible.fill(False)
     opaque = game_map.opaque()
     _light(x, y, visible)
     for octant in range(8):
         _cast_light(visible, opaque, x, y, radius, 1, 1.0, 0.0,
                     MULT[0, octant], MULT[1, octant],
                     MULT[2, octant], MULT[3, octant])
+    game_map.explored = game_map.explored | visible
 
