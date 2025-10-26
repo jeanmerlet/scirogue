@@ -1,10 +1,13 @@
 from .ecs.systems.input import Input
 from .ecs.systems import render as sys_render
 from .ecs.systems import movement as sys_move
+from .ecs.systems.occupancy import rebuild_occupancy
 from .ecs.world import World
 from .ecs.components import Position, Renderable, Actor, FOVRadius
 from .map.tiles import Map
 from .ecs.systems.fov import do_fov
+from .factories.spawner import spawn_monster
+from random import choice, randint
 
 class BaseState:
     def __init__(self, term):
@@ -34,10 +37,27 @@ class PlayState(BaseState):
         self.world.add(player, Renderable("@", "amber"))
         self.world.add(player, Actor())
         self.player = player
+        self._populate_map()
+        self._render()
+
+    def _populate_map(self):
+        pos = self.world.get(Position, self.player)
+        for r in self.map.rooms:
+            if r.is_inside(pos.x, pos.y): continue
+            num = min(r.size(), randint(0, 3))
+            for _ in range(num):
+                x, y = choice(list(r.inside()))
+                if not self.map.blocked(x, y):
+                    kind = choice(["skitterling", "skittermaw",
+                                   "skitterseer"])
+                    spawn_monster(self.world, kind, x, y)
+
+    def _render(self):
         pos = self.world.get(Position, self.player)
         radius = self.world.get(FOVRadius, self.player).radius
         do_fov(pos.x, pos.y, radius, self.map)
-        sys_render.draw(self.term, self.world, self.map.draw)
+        sys_render.draw(self.term, self.world, self.map.draw, 
+                        self.map.visible)
 
     def tick(self):
         intent = self.input.poll(self.term)
@@ -54,10 +74,8 @@ class PlayState(BaseState):
             case "quit":
                 return None
 
-        pos = self.world.get(Position, self.player)
-        radius = self.world.get(FOVRadius, self.player).radius
-        do_fov(pos.x, pos.y, radius, self.map)
-        sys_render.draw(self.term, self.world, self.map.draw)
+        rebuild_occupancy(self.map, self.world)
+        self._render()
 
         return self
 

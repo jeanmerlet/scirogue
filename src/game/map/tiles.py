@@ -12,6 +12,7 @@ class Map:
         self.block = np.zeros((w, h), dtype=np.bool_)
         self.visible = np.zeros((w, h), dtype=np.bool_)
         self.explored = np.zeros((w, h), dtype=np.bool_)
+        self.occupied = np.zeros((w, h), dtype=np.bool_)
         # for debugging
         self.centers = np.zeros((w, h), dtype=np.bool_)
         self.peris = np.zeros((w, h), dtype=np.bool_)
@@ -44,7 +45,8 @@ class Map:
         return 0 <= x < self.w and 0 <= y < self.h
 
     def blocked(self, x, y):
-        return bool(self.block[x, y] or self.edge[x, y])
+        return bool(self.block[x, y] or self.edge[x, y] or
+                    self.occupied[x, y])
 
     def open_door(self, x, y):
         self.doors_closed[x, y] = False
@@ -56,12 +58,13 @@ class Map:
                      min_rsize=1, max_rsize=10,
                      reflect="none", border=1):
         from .bsp import generate_bsp
-        floor, walls, doors_closed, windows, centers, peris = generate_bsp(
+        rooms, floor, walls, doors_closed, windows, centers, peris = generate_bsp(
             self.w, self.h, seed=seed,
             min_leaf=min_leaf, max_leaf=max_leaf,
             min_rsize=min_rsize, max_rsize=max_rsize,
             border=border, reflect=reflect
         )
+        self.rooms = rooms
         self._clear_masks()
         # add floors
         fx, fy = zip(*floor)

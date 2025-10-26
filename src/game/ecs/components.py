@@ -26,3 +26,16 @@ class Opaque:
 class Actor:
     pass
 
+@dataclass
+class HP:
+    current: int
+    maximum: int
+
+@dataclass
+class Attack:
+    damage: int
+
+@dataclass
+class Speed:
+    mult: float
+

@@ -13,6 +13,16 @@ class Room:
         return (self.x <= x < self.x + self.w and
                 self.y <= y < self.y + self.h)
 
+    def size(self):
+        return self.w * self.h
+
+    def inside(self):
+        inside = set()
+        for x in range(self.x, self.x + self.w):
+            for y in range(self.y, self.y + self.h):
+                inside.add((x, y))
+        return inside
+
     def perimeter(self, corners=False):
         c = 1 if corners else 0
         perimeter = set()
@@ -335,4 +345,4 @@ def generate_bsp(w, h, seed=None,
     for r in rooms:
         for p in r.perimeter():
             peris.add(p)
-    return floor, walls, doors, windows, centers, peris
+    return rooms, floor, walls, doors, windows, centers, peris
