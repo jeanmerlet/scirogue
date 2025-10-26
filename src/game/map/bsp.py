@@ -189,8 +189,6 @@ def _place_doors(rooms, floor, walls):
                     if w > dmax and (x, y) not in floor:
                         place_door = False
             if place_door:
-                if (x, y) in walls:
-                    walls.remove((x, y))
                 doors.add((x, y))
     return doors
 

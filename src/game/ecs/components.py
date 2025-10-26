@@ -11,6 +11,10 @@ class Renderable:
     color: str
 
 @dataclass
+class FOVRadius:
+    radius: int
+
+@dataclass
 class Blocks:
     pass
 

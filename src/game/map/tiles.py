@@ -6,34 +6,60 @@ class Map:
         self.w, self.h = w, h
         self.floor = np.zeros((w, h), dtype=np.bool_)
         self.walls = np.zeros((w, h), dtype=np.bool_)
-        self.doors = np.zeros((w, h), dtype=np.bool_)
+        self.doors_open = np.zeros((w, h), dtype=np.bool_)
+        self.doors_closed = np.zeros((w, h), dtype=np.bool_)
         self.block = np.zeros((w, h), dtype=np.bool_)
+        self.visible = np.zeros((w, h), dtype=np.bool_)
         # for debugging
         self.centers = np.zeros((w, h), dtype=np.bool_)
         self.peris = np.zeros((w, h), dtype=np.bool_)
+        # map edge
+        self.edge = np.zeros((w, h), dtype=np.bool_)
+        self.edge[0, :]  = True
+        self.edge[-1, :] = True
+        self.edge[:, 0]  = True
+        self.edge[:, -1] = True
 
-    def in_bounds(self, x, y):
-        return 0 <= x < self.w and 0 <= y < self.h
-
-    def blocked(self, x, y):
-        return bool(self.block[x, y])
+    def _clear_masks(self):
+        self.floor.fill(False)
+        self.walls.fill(False)
+        self.doors_open.fill(False)
+        self.doors_closed.fill(False)
+        self.block.fill(False)
+        self.centers.fill(False)
+        self.peris.fill(False)
 
     def _pick_player_start(self, floor, seed):
         rng = random.Random(seed)
         px, py = rng.choice(list(floor))
         return px, py
 
+    def opaque(self):
+        return self.walls | self.edge | self.doors_closed
+
+    def in_bounds(self, x, y):
+        return 0 <= x < self.w and 0 <= y < self.h
+
+    def blocked(self, x, y):
+        return bool(self.block[x, y] or self.edge[x, y])
+
+    def open_door(self, x, y):
+        self.doors_closed[x, y] = False
+        self.doors_open[x, y] = True
+        self.block[x, y] = False
+
     def generate_bsp(self, seed=None,
                      min_leaf=6, max_leaf=20,
                      min_rsize=1, max_rsize=10,
                      reflect="none", border=1):
         from .bsp import generate_bsp
-        centers, floor, walls, doors, peris = generate_bsp(
+        centers, floor, walls, doors_closed, peris = generate_bsp(
             self.w, self.h, seed=seed,
             min_leaf=min_leaf, max_leaf=max_leaf,
             min_rsize=min_rsize, max_rsize=max_rsize,
             border=border, reflect=reflect
         )
+        self._clear_masks()
         # add floors
         fx, fy = zip(*floor)
         self.floor[list(fx), list(fy)] = True
@@ -44,49 +70,47 @@ class Map:
         self.walls[list(wx), list(wy)] = True
         self.block[list(wx), list(wy)] = True
         # add doors
-        dx, dy = zip(*doors)
-        self.doors[list(dx), list(dy)] = True
+        dx, dy = zip(*doors_closed)
+        self.doors_closed[list(dx), list(dy)] = True
+        self.block[list(dx), list(dy)] = True
+        self.walls[list(dx), list(dy)] = False
         # room centers for debugging
         cx, cy = zip(*centers)
         self.centers[list(cx), list(cy)] = True
         # room perimeters for debugging
         px, py = zip(*peris)
         self.peris[list(px), list(py)] = True
-        # map edge blocks
-        # TODO: change this to map space border later
-        # TODO: move to wrapper around all procgen methods
-        self.block[0, :]  = True
-        self.block[-1, :] = True
-        self.block[:, 0]  = True
-        self.block[:, -1] = True
 
     def draw(self, term):
         xs, ys = term.xs, term.ys # x and y scale factors
         # floors
         term.color("darker grey")
-        floorx, floory = np.nonzero(self.floor)
-        for x, y in zip(floorx, floory):
+        fx, fy = np.nonzero(self.floor & self.visible)
+        for x, y in zip(fx, fy):
             term.put(xs * int(x), ys * int(y), ".")
         # walls
         term.color("grey")
-        wallx, wally = np.nonzero(self.walls)
-        for x, y in zip(wallx, wally):
+        wx, wy = np.nonzero(self.walls & self.visible)
+        for x, y in zip(wx, wy):
             term.put(xs * int(x), ys * int(y), "#")
-        # walls
+        # doors
         term.color("dark blue")
-        doorx, doory = np.nonzero(self.doors)
-        for x, y in zip(doorx, doory):
+        dx, dy = np.nonzero(self.doors_closed & self.visible)
+        for x, y in zip(dx, dy):
             term.put(xs * int(x), ys * int(y), "+")
+        dx, dy = np.nonzero(self.doors_open & self.visible)
+        for x, y in zip(dx, dy):
+            term.put(xs * int(x), ys * int(y), "/")
         # centers (for debugging)
         term.color("red")
-        centerx, centery = np.nonzero(self.centers)
-        for x, y in zip(centerx, centery):
+        cx, cy = np.nonzero(self.centers & self.visible)
+        for x, y in zip(cx, cy):
             break
             term.put(xs * int(x), ys * int(y), "*")
         # perimeters (for debugging)
         term.color("green")
-        perix, periy = np.nonzero(self.peris)
-        for x, y in zip(perix, periy):
+        px, py = np.nonzero(self.peris & self.visible)
+        for x, y in zip(px, py):
             break
             term.put(xs * int(x), ys * int(y), "*")
 
