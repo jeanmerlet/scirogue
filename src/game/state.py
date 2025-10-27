@@ -7,6 +7,10 @@ from .ecs.components import *
 from .map.tiles import Map
 from .ecs.systems.fov import do_fov
 from .factories.spawner import spawn_monster
+from .ui.layout import make_layout
+from .ui.panels import SidebarPanel, LogPanel
+from .ecs.systems.hud import get_player_stats
+from .services.log import MessageLog
 from random import choice, randint
 
 class BaseState:
@@ -18,31 +22,39 @@ class BaseState:
 
 class TitleState(BaseState):
     def tick(self):
-        blt = self.term
-        blt.clear()
-        blt.refresh()
-        return PlayState(blt)
+        self.term.clear()
+        self.term.refresh()
+        return PlayState(self.term)
 
 class PlayState(BaseState):
     def __init__(self, term):
         super().__init__(term)
         self.input = Input("play")
-        self.map = Map(80, 60)
+        self.map = Map(80, 52)
         self.map.generate_bsp(seed=102, reflect="h")
         self.world = World()
         player = self.world.create()
         startx, starty = self.map.px, self.map.py
         self.world.add(player, Position(startx, starty))
         self.map.entities[startx, starty] = player
+        self.world.add(player, Name("player"))
         self.world.add(player, FOVRadius(10))
         self.world.add(player, Renderable("@", "amber", 3))
         self.world.add(player, Blocks())
         self.world.add(player, Actor())
         self.world.add(player, Faction("player"))
         self.world.add(player, HP(100, 100))
+        self.world.add(player, Oxygen(100, 100))
         self.world.add(player, Attack(5))
         self.world.add(player, Speed(1.0))
         self.player = player
+        self.log = MessageLog()
+        self.sidebar = SidebarPanel()
+        self.logpanel = LogPanel()
+        sidebar_w = term.w - self.map.w
+        log_h = term.h - self.map.h
+        self.layout = make_layout(self.term, self.map.w, self.map.h,
+                                  sidebar_w, log_h)
         self._populate_map()
         self._render()
 
@@ -65,11 +77,6 @@ class PlayState(BaseState):
         radius = self.world.get(FOVRadius, self.player).radius
         do_fov(pos.x, pos.y, radius, self.map)
 
-    def _render(self):
-        self._fov()
-        sys_render.draw(self.term, self.world, self.map.draw, 
-                        self.map.visible)
-
     def _take_player_turn(self):
         intent = self.input.poll(self.term)
         match intent[0]:
@@ -87,8 +94,17 @@ class PlayState(BaseState):
     def _take_nonplayer_turns(self):
         take_monster_turns(self.world, self.map, self.player, log=self.log)
 
+    def _render(self):
+        self.term.clear()
+        self._fov()
+        sys_render.draw(self.term, self.world, self.map.draw, 
+                        self.map.visible)
+        stats = get_player_stats(self.world, self.player)
+        self.sidebar.render(self.term, self.layout.sidebar, stats)
+        self.logpanel.render(self.term, self.layout.log, self.log)
+        self.term.refresh()
+
     def tick(self):
-        self.log = getattr(self, "log", [])
         state = self._take_player_turn()
         self._take_nonplayer_turns()
         self._render()

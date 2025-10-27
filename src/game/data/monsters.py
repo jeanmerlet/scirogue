@@ -1,5 +1,3 @@
-#from ..ecs.components import Position, Renderable, Actor
-
 MONSTERS = {
     "skitterling": {
         "ch": "s",

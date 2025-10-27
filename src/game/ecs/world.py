@@ -9,6 +9,9 @@ class World:
         self._next_eid += 1
         return self._next_eid - 1
 
+    def destroy(self, eid):
+        for comp_type in self.get
+
     def add(self, eid, comp):
         self.components[type(comp)][eid] = comp
 
