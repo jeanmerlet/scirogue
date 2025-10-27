@@ -1,4 +1,4 @@
-from ..components import Position
+from ..components import Position, Blocks
 from .combat import melee
 
 def try_move(world, eid, dx, dy, game_map, log=None):
@@ -6,12 +6,15 @@ def try_move(world, eid, dx, dy, game_map, log=None):
     nx, ny = pos.x + dx, pos.y + dy
 
     if game_map.blocked(nx, ny):
-        target = game_map.entity_at.get((nx, ny))
-        if target is not None:
-            return melee(world, eid, target, log=log)
+        target = game_map.entities[nx, ny]
+        if target >= 0:
+            return melee(world, game_map, eid, target, log=log)
         elif game_map.doors_closed[nx, ny]:
             game_map.open_door(nx, ny)
         return False
     else:
+        if world.has(eid, Blocks):
+            game_map.entities[pos.x, pos.y] = -1
+            game_map.entities[nx, ny] = eid
         pos.x, pos.y = nx, ny
         return True

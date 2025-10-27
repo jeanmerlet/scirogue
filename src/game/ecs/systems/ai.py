@@ -25,7 +25,14 @@ def _move_towards(world, eid, tx, ty, game_map, log=None):
 def take_monster_turns(world, game_map, player_eid, log=None):
     ppos = world.get(Position, player_eid)
     if not ppos: return
+    # sort sentient ents by distance from player (closest go first)
+    batch = []
     for eid, pos, _ in world.view(Position, Actor):
+        if eid == player_eid: continue
+        if not world.has(eid, AI): continue
+        batch.append((eid, pos))
+    batch.sort(key=lambda t: min(abs(pos.x - ppos.x), abs(pos.y - ppos.y)))
+    for eid, pos in batch:
         if eid == player_eid: continue
         if not world.has(eid, AI): continue
         if _adjacent(pos.x, pos.y, ppos.x, ppos.y):

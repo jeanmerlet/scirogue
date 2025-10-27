@@ -1,16 +1,18 @@
 from ..components import *
 
-def die(world, target, log=None):
+def die(world, game_map, target, log=None):
     if log:
         dn = world.get(Name, target).text if world.get(Name, target) else "target"
         log.append(f"{dn} dies.")
     renderable = world.get(Renderable, target)
     renderable.ch = "%"
     renderable.order = 0
+    pos = world.get(Position, target)
+    game_map.entities[pos.x, pos.y] = -1
     world.remove(target, Blocks)
     world.remove(target, AI)
 
-def melee(world, attacker, target, log=None):
+def melee(world, game_map, attacker, target, log=None):
     af = world.get(Faction, attacker)
     df = world.get(Faction, target)
     if af == df: return False
@@ -27,6 +29,6 @@ def melee(world, attacker, target, log=None):
         dn = world.get(Name, target).text if world.get(Name, target) else "target"
         log.append(f"{an} hits {dn} for {dmg}.")
     
-    if dhp.current <= 0: die(world, target, log)
+    if dhp.current <= 0: die(world, game_map, target, log)
     return True
 

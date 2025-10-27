@@ -2,7 +2,6 @@ from .ecs.systems.input import Input
 from .ecs.systems import render as sys_render
 from .ecs.systems import movement as sys_move
 from .ecs.systems.ai import take_monster_turns
-from .ecs.systems.occupancy import rebuild_occupancy
 from .ecs.world import World
 from .ecs.components import *
 from .map.tiles import Map
@@ -34,6 +33,7 @@ class PlayState(BaseState):
         player = self.world.create()
         startx, starty = self.map.px, self.map.py
         self.world.add(player, Position(startx, starty))
+        self.map.entities[startx, starty] = player
         self.world.add(player, FOVRadius(10))
         self.world.add(player, Renderable("@", "amber", 3))
         self.world.add(player, Blocks())
@@ -51,12 +51,14 @@ class PlayState(BaseState):
         for r in self.map.rooms:
             if r.is_inside(pos.x, pos.y): continue
             num = min(r.size(), randint(0, 3))
+            num = min(r.size(), randint(4, 4))
             for _ in range(num):
                 x, y = choice(list(r.inside()))
                 if not self.map.blocked(x, y):
                     kind = choice(["skitterling", "skittermaw",
                                    "skitterseer"])
-                    spawn_monster(self.world, kind, x, y)
+                    eid = spawn_monster(self.world, kind, x, y)
+                    self.map.entities[x, y] = eid
 
     def _fov(self):
         pos = self.world.get(Position, self.player)
@@ -79,7 +81,6 @@ class PlayState(BaseState):
                 return MenuState(self.term, self.input)
             case "quit":
                 return None
-        rebuild_occupancy(self.map, self.world)
         self._fov()
         return self
 
@@ -90,7 +91,6 @@ class PlayState(BaseState):
         self.log = getattr(self, "log", [])
         state = self._take_player_turn()
         self._take_nonplayer_turns()
-        rebuild_occupancy(self.map, self.world)
         self._render()
         return state
 

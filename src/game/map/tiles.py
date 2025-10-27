@@ -12,7 +12,7 @@ class Map:
         self.block = np.zeros((w, h), dtype=np.bool_)
         self.visible = np.zeros((w, h), dtype=np.bool_)
         self.explored = np.zeros((w, h), dtype=np.bool_)
-        self.occupied = np.zeros((w, h), dtype=np.bool_)
+        self.entities = np.full((w, h), -1, dtype=int)
         # for debugging
         self.centers = np.zeros((w, h), dtype=np.bool_)
         self.peris = np.zeros((w, h), dtype=np.bool_)
@@ -46,7 +46,7 @@ class Map:
 
     def blocked(self, x, y):
         return bool(self.block[x, y] or self.edge[x, y] or
-                    self.occupied[x, y])
+                    self.entities[x, y] >= 0)
 
     def open_door(self, x, y):
         self.doors_closed[x, y] = False
