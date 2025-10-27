@@ -8,7 +8,8 @@ class Position:
 @dataclass
 class Renderable:
     ch: str
-    color: str
+    color: str = "white"
+    order: int = 0
 
 @dataclass
 class FOVRadius:
@@ -25,6 +26,20 @@ class Opaque:
 @dataclass
 class Actor:
     pass
+
+@dataclass
+class Faction:
+    tag: str
+
+@dataclass
+class Name:
+    text: str
+
+@dataclass
+class AI:
+    pass
+
+# combat #
 
 @dataclass
 class HP:

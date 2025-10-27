@@ -86,10 +86,10 @@ def _split(node, rng, min_leaf=6, max_leaf=20):
 def _carve_rooms(node, rng, min_rsize=1, max_rsize=10, border=1):
     """Assign a room to each leaf BSP node."""
     if node.left or node.right:
-        if node.left: _carve_rooms(node.left, rng, min_rsize,
-                                   max_rsize, border)
-        if node.right: _carve_rooms(node.right, rng, min_rsize,
-                                    max_rsize, border)
+        if node.left: _carve_rooms(node.left, rng, min_rsize, max_rsize,
+                                   border)
+        if node.right: _carve_rooms(node.right, rng, min_rsize, max_rsize,
+                                    border)
         return
 
     # leaf: pick a room size and position it
@@ -312,11 +312,10 @@ def generate_bsp(w, h, seed=None,
     if reflect in ["v", "hv"]:
         inner_h = maph - margin
     # run BSP
-    root = BSPNode(Room(inner_x + 1, inner_y + 1,
-                        inner_w - 2, inner_h - 2))
+    root = BSPNode(Room(inner_x + 1, inner_y + 1, inner_w - 2, inner_h - 2))
     _split(root, rng, min_leaf=min_leaf, max_leaf=max_leaf)
-    _carve_rooms(root, rng, min_rsize=min_rsize,
-                 max_rsize=max_rsize, border=border)
+    _carve_rooms(root, rng, min_rsize=min_rsize, max_rsize=max_rsize,
+                 border=border)
     rooms = []
     _collect_rooms(root, rooms)
     # add floor based on rooms
@@ -335,8 +334,8 @@ def generate_bsp(w, h, seed=None,
     gaph = 2 * (mapw - edgeh)
     gapv = 2 * (maph - edgev)
     tiles = [floor, walls, doors, windows]
-    floor, walls, doors, windows = _reflect_tiles(
-        tiles, w, h, gaph, gapv, reflect)
+    floor, walls, doors, windows = _reflect_tiles(tiles, w, h, gaph, gapv,
+                                                  reflect)
     rooms = _reflect_rooms(rooms, w, h, gaph, gapv, reflect)
     doors = _connect_center(floor, walls, doors, w, h, edgeh, edgev, reflect)
     # for debugging
