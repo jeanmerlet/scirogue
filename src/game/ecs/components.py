@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from enum import Enum, auto
+from dataclasses import dataclass, field
 
 @dataclass
 class Position:
@@ -40,32 +39,22 @@ class AI:
 
 @dataclass
 class Inventory:
+    items: list = field(default_factory=list)
     capacity: int = 26
-    items: []
 
 @dataclass
 class Equipment:
-    slots: {
+    slots: dict = field(default_factory=lambda: {
         "hand1": None,
         "hand2": None,
         "head": None,
         "body": None,
         "legs": None,
         "feet": None
-    }
-
-@dataclass
-class Slot(Enum):
-    HAND1 = auto()
-    HAND2 = auto()
-    HEAD  = auto()
-    BODY  = auto()
-    LEGS  = auto()
-    FEET  = auto()
+    })
 
 @dataclass
 class Item:
-    name: str
     stackable: bool = False
     count: int = 1
     max_count: int = 1
@@ -76,7 +65,7 @@ class Consumable:
 
 @dataclass
 class Equippable:
-    slots: []
+    slots: list = field(default_factory=list)
     two_handed: bool = False
     attack_bonus: int = 0
     defense_bonus: int = 0

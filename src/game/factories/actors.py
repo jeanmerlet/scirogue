@@ -1,11 +1,11 @@
 from ..ecs.world import World
 from ..ecs.components import *
-from ..data.monsters import MONSTERS
+from ..data.actors import ACTORS
 
-def spawn_monster(world, kind, x, y):
-    data = MONSTERS[kind]
+def spawn_actor(world, key, x, y):
+    data = ACTORS[key]
     eid = world.create()
-    world.add(eid, Name(kind))
+    world.add(eid, Name(data["name"]))
     world.add(eid, Position(x, y))
     world.add(eid, Renderable(data["ch"], data["color"], order=3))
     world.add(eid, Blocks())

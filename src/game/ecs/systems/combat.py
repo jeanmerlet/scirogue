@@ -5,7 +5,7 @@ def die(world, game_map, target, log=None):
     renderable.ch = "%"
     renderable.order = 0
     pos = world.get(Position, target)
-    game_map.entities[pos.x, pos.y] = -1
+    game_map.actors[pos.x, pos.y] = -1
     world.remove(target, Blocks)
     world.remove(target, AI)
     if log:

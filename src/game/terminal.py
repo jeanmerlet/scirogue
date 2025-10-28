@@ -10,7 +10,9 @@ class Key:
     DOWN_LEFT   = 1007
     DOWN_RIGHT  = 1008
     WAIT        = 1009
-    QUIT        = 1010
+    PICK_UP     = 1010
+    DROP        = 1011
+    QUIT        = 1012
 
     ALIASES = {
         LEFT:       (blt.TK_LEFT,  blt.TK_KP_4, ord('h')),
@@ -22,6 +24,8 @@ class Key:
         DOWN_LEFT:  (blt.TK_KP_1,  ord('b')),
         DOWN_RIGHT: (blt.TK_KP_3,  ord('n')),
         WAIT:       (blt.TK_KP_5,  ord('.')),
+        PICK_UP:    (blt.TK_G,),
+        DROP:       (blt.TK_D,),
         QUIT:       (blt.TK_Q,)
     }
 
@@ -32,10 +36,9 @@ REVERSE = {phys: logical
 def canonicalize(physical_key: int) -> int:
     return REVERSE.get(physical_key)
 
-
 class Term:
     def __init__(self):
-        self.font_path = "../assets/fonts/SpaceMono-Regular.ttf"
+        self.font_path = "../assets/fonts/CourierPrime-Regular.ttf"
         self.xs = 2
         self.ys = 1
         self.w = 100

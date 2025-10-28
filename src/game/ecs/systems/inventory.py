@@ -1,31 +1,32 @@
 from ..components import *
 
-def stack_item(world):
-    pass
-
 def pick_up(world, actor_eid, item_eid, log=None):
+    # TODO: handle creating a new stack when Item.max_count is reached
     inv = world.get(Inventory, actor_eid)
     if not inv: return False
     item = world.get(Item, item_eid)
     if not item: return False
+    name = world.get(Name, item_eid).text
     if item.stackable:
+        inv_names = [world.get(Name, eid).text for eid in inv.items]
         inv_items = [world.get(Item, eid) for eid in inv.items]
-        for inv_item in inv_items:
-            if item.name == inv_item.name:
-                inv_item.count += 1
+        for i, inv_name in enumerate(inv_names):
+            if name == inv_name:
+                inv_items[i].count += 1
                 world.destroy(item_eid)
-                log.add(f"You add the {item.name} to your stack.")
+                log.add(f"You add the {name} to your stack.")
                 return True
     if len(inv.items) >= inv.capacity:
         log.add("You can't carry any more.")
         return False
     world.remove(item_eid, Position)
     inv.items.append(item_eid)
-    log.add(f"You pick up the {item.name}.")
+    log.add(f"You pick up the {name}.")
     return True
 
-def drop(world, actor_eid, item_eid, x, y):
+def drop(world, actor_eid, item_eid, x, y, log=None):
     # TODO: handle dropping n of a stack
+    # TODO: handle stacking item on the ground
     inv = world.get(Inventory, actor_eid)
     if not inv: return False
     item = world.get(Item, item_eid)
@@ -38,58 +39,83 @@ def drop(world, actor_eid, item_eid, x, y):
     else:
         inv.items.remove(item_eid)
         world.add(item_eid, Position(x, y))
+    name = world.get(Name, item_eid).text
+    log.add(f"You drop the {name}.")
     return True
 
-def _occupy_two_hands(equipment, primary, item_eid):
-    equipment.slots[primary] = item_eid
-    other = "hand2" if primary == "hand1" else "hand1"
-    equipment.slots[other] = item_eid
+def _occupy_two_hands(equipment, item_eid, name, log=None):
+    equipment.slots["hand1"] = item_eid
+    equipment.slots["hand2"] = item_eid
+    log.add(f"You equip the {name} in both hands.")
+
+def equip_item(world, actor_eid, item_eid, log=None):
+    equip = world.get(Equipment, actor_eid)
+    if not equip:
+        log.add("You cannot equip items.")
+        return False
+    name = world.get(Name, item_eid)
+    eq = world.get(Equippable, item_eid)
+    if not eq:
+        log.add(f"{name.capitalize()} is not equippable.")
+        return False
+    slot = eq.slot
+    if slot not in equipment.slots.keys():
+        log.add(f"Nowhere to equip {name}.")
+        return False
+    else:
+        if eq.two_handed:
+            if (equip.slots["hand1"] is None and equip.slots["hand2"] is None):
+                _occupy_two_hands(equip, item_eid, name, log)
+                return True
+            elif (equip.slots["hand1"] is not None and
+                  unequip_slot(world, actor_eid, "hand1")):
+                _occupy_two_hands(equip, item_eid, name, log)
+                return True
+            elif (equip.slots["hand2"] is not None and
+                  unequip_slot(world, actor_eid, "hand2")):
+                _occupy_two_hands(equip, item_eid, name, log)
+                return True
+            else:
+                log.add("Need both hands free.")
+                return False
+        else:
+            if equip.slots[slot] is None:
+                equip.slots[slot] = item_eid
+                log.add("You equip the {name}.")
+                return True
+            elif (equip.slots[slot] is not None and
+                  unequip_slot(world, actor_eid, slot):
+                equip.slots[slot] = item_eid
+                log.add("You equip the {name}.")
+                return True
+            else:
+                log.add("There's already something there.")
+                return False
 
 def _free_two_hands(equipment):
     equipment.slots["hand1"] = None
     equipment.slots["hand2"] = None
 
-def equip_item(world, actor_eid, item_eid, preferred_slot, log=None):
-    equipment = world.get(Equipment, actor_eid)
-    if not equipment:
-        log.add("No valid equipment slots.")
-        return False
-    eq = world.get(Equippable, item_eid)
-    if not eq:
-        log.add("Item is not equippable.")
-        return False
-    # pick target slot
-    targets = eq.slots if preferred_slot is None else [preferred_slot]
-    for slot in targets:
-        if slot not in (Slot.HAND1, Slot.HAND2, Slot.HEAD, Slot.BODY, Slot.LEGS, Slot.FEET):
-            continue
-        # two-handed logic
-        if eq.two_handed and slot in (Slot.HAND1, Slot.HAND2):
-            # need both hands free or holding the same item (re-equip)
-            if (equip.slots[Slot.HAND1] is None and equip.slots[Slot.HAND2] is None) or \
-               (equip.slots[Slot.HAND1] == item_eid and equip.slots[Slot.HAND2] == item_eid):
-                _occupy_two_hands(equip, item_eid, slot)
-                return (True, "Equipped (2h).")
-            else:
-                return (False, "Both hands must be free.")
-        else:
-            # normal: slot must be free
-            if equip.slots[slot] is None:
-                equip.slots[slot] = item_eid
-                return (True, "Equipped.")
-    return (False, "No valid slot free.")
-
-def unequip_slot(world, actor_eid, slot: Slot) -> Optional[int]:
+def unequip_slot(world, actor_eid, slot):
     equip = world.get(Equipment, actor_eid)
-    if not equip: return None
+    if not equip:
+        log.add("You cannot equip items.")
+        return False
     eid = equip.slots.get(slot)
-    if eid is None: return None
+    if eid is None:
+        log.add("That slot is already empty.")
+        return False
     eq = world.get(Equippable, eid)
-    if eq and eq.two_handed and slot in (Slot.HAND1, Slot.HAND2):
+    inv = world.get(Inventory, actor_eid)
+    if len(inv.items) >= inv.capacity:
+        log.add("Drop something first.")
+        return False
+    if eq and eq.two_handed and slot in ["hand1", "hand2"]:
         _free_two_hands(equip)
     else:
         equip.slots[slot] = None
-    return eid
+    inv.items.append(eid)
+    return True
 
 def use_consumable(world, actor_eid, item_eid) -> Tuple[bool,str]:
     cons = world.get(Consumable, item_eid)

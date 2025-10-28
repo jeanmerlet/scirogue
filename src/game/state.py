@@ -6,7 +6,8 @@ from .ecs.world import World
 from .ecs.components import *
 from .map.tiles import Map
 from .ecs.systems.fov import do_fov
-from .factories.spawner import spawn_monster
+from .factories.actors import spawn_actor
+from .factories.items import spawn_item
 from .ui.layout import make_layout
 from .ui.panels import SidebarPanel, LogPanel
 from .ecs.systems.hud import get_player_stats
@@ -36,12 +37,14 @@ class PlayState(BaseState):
         player = self.world.create()
         startx, starty = self.map.px, self.map.py
         self.world.add(player, Position(startx, starty))
-        self.map.entities[startx, starty] = player
+        self.map.actors[startx, starty] = player
         self.world.add(player, Name("player"))
         self.world.add(player, FOVRadius(10))
         self.world.add(player, Renderable("@", "amber", 3))
         self.world.add(player, Blocks())
         self.world.add(player, Actor())
+        self.world.add(player, Inventory(capacity=26))
+        self.world.add(player, Equipment())
         self.world.add(player, Faction("player"))
         self.world.add(player, HP(100, 100))
         self.world.add(player, Oxygen(100, 100))
@@ -59,18 +62,26 @@ class PlayState(BaseState):
         self._render()
 
     def _populate_map(self):
+        # TODO: stack items when duplicating in same spot (or increase count)
         pos = self.world.get(Position, self.player)
         for r in self.map.rooms:
+            if r.is_inside(pos.x, pos.y):
+                num = min(r.size(), randint(4, 4))
+                for _ in range(num):
+                    x, y = choice(list(r.inside()))
+                    kind = choice(["stimpack", "crowbar",
+                                   "coil_rifle"])
+                    eid = spawn_item(self.world, kind, x, y)
+                    self.map.items[(x, y)].append(eid)
             if r.is_inside(pos.x, pos.y): continue
             num = min(r.size(), randint(0, 3))
-            num = min(r.size(), randint(4, 4))
             for _ in range(num):
                 x, y = choice(list(r.inside()))
                 if not self.map.blocked(x, y):
                     kind = choice(["skitterling", "skittermaw",
                                    "skitterseer"])
-                    eid = spawn_monster(self.world, kind, x, y)
-                    self.map.entities[x, y] = eid
+                    eid = spawn_actor(self.world, kind, x, y)
+                    self.map.actors[x, y] = eid
 
     def _fov(self):
         pos = self.world.get(Position, self.player)
@@ -84,6 +95,13 @@ class PlayState(BaseState):
                 _, dx, dy = intent
                 sys_move.try_move(self.world, self.player,
                                   dx, dy, self.map, self.log)
+            case "pick_up":
+                pos = self.world.get(Position, self.player)
+                eid = game_map.items((pos.x, pos.y))
+                if eid and self.world.has(eid, Item):
+                    pick_up(self.world, self.player, eid)
+            case "drop":
+                eid = game_map.actors
             case "open_menu":
                 return MenuState(self.term, self.input)
             case "quit":

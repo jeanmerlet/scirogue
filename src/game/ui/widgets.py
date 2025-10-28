@@ -20,7 +20,7 @@ def draw_bar(term, x, y, w, cur, maxv, fg, bg="dark grey"):
     filled = 0 if maxv <= 0 else int(round((cur / maxv) * w))
     term.color(bg)
     for i in range(w):
-        put(term, x + i, y, "#")
+        put(term, x + i, y, "█")
     term.color(fg)
     for i in range(filled):
-        put(term, x + i, y, "#")
+        put(term, x + i, y, "█")

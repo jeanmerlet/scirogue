@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from collections import defaultdict
 
 class Map:
     def __init__(self, w, h):
@@ -12,7 +13,8 @@ class Map:
         self.block = np.zeros((w, h), dtype=np.bool_)
         self.visible = np.zeros((w, h), dtype=np.bool_)
         self.explored = np.zeros((w, h), dtype=np.bool_)
-        self.entities = np.full((w, h), -1, dtype=int)
+        self.actors = np.full((w, h), -1, dtype=int)
+        self.items = defaultdict(list) 
         # for debugging
         self.centers = np.zeros((w, h), dtype=np.bool_)
         self.peris = np.zeros((w, h), dtype=np.bool_)
@@ -46,7 +48,7 @@ class Map:
 
     def blocked(self, x, y):
         return bool(self.block[x, y] or self.edge[x, y] or
-                    self.entities[x, y] >= 0)
+                    self.actors[x, y] >= 0)
 
     def open_door(self, x, y):
         self.doors_closed[x, y] = False
@@ -122,7 +124,7 @@ class Map:
             term.put(xs * int(x), ys * int(y), "+")
         dx, dy = np.nonzero(self.doors_open & self.visible)
         for x, y in zip(dx, dy):
-            term.put(xs * int(x), ys * int(y), "-")
+            term.put(xs * int(x), ys * int(y), "/")
         term.color("darker grey")
         dx, dy = np.nonzero(self.doors_closed & ~self.visible &
                             self.explored)
@@ -131,7 +133,7 @@ class Map:
         dx, dy = np.nonzero(self.doors_open & ~self.visible &
                             self.explored)
         for x, y in zip(dx, dy):
-            term.put(xs * int(x), ys * int(y), "-")
+            term.put(xs * int(x), ys * int(y), "/")
         # windows
         term.color("dark blue")
         wx, wy = np.nonzero(self.windows & self.visible)

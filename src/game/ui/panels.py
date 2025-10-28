@@ -7,9 +7,9 @@ class SidebarPanel:
         x, y = rect.x + 1, rect.y + 1
         draw_bar(term, x, y, rect.w - 2, player_stats.hp,
                  player_stats.max_hp, "dark red")
-        y += 1
+        y += 2
         draw_bar(term, x, y, rect.w - 2, player_stats.oxy,
-                 player_stats.max_oxy, "cyan")
+                 player_stats.max_oxy, "dark cyan")
 
 class LogPanel:
     def render(self, term, rect, log):
