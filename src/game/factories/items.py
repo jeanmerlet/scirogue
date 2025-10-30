@@ -13,7 +13,7 @@ def spawn_item(world, key, x, y):
         world.add(eid, Consumable(data["effect_id"]))
     if data["kind"] == "equip":
         world.add(eid, Equippable(
-            slots=data["slots"],
+            slot=data["slot"],
             two_handed=data.get("two_handed", False),
             attack_bonus=data.get("attack_bonus", 0),
             defense_bonus=data.get("defense_bonus", 0),

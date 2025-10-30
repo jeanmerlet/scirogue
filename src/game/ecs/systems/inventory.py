@@ -1,6 +1,6 @@
 from ..components import *
 
-def pick_up(world, actor_eid, item_eid, log=None):
+def pick_up(world, actor_eid, item_eid, log):
     # TODO: handle creating a new stack when Item.max_count is reached
     inv = world.get(Inventory, actor_eid)
     if not inv: return False
@@ -14,7 +14,7 @@ def pick_up(world, actor_eid, item_eid, log=None):
             if name == inv_name:
                 inv_items[i].count += 1
                 world.destroy(item_eid)
-                log.add(f"You add the {name} to your stack.")
+                log.add(f"You pick up the {name}.")
                 return True
     if len(inv.items) >= inv.capacity:
         log.add("You can't carry any more.")
@@ -24,7 +24,7 @@ def pick_up(world, actor_eid, item_eid, log=None):
     log.add(f"You pick up the {name}.")
     return True
 
-def drop(world, actor_eid, item_eid, x, y, log=None):
+def drop(world, actor_eid, item_eid, x, y, log):
     # TODO: handle dropping n of a stack
     # TODO: handle stacking item on the ground
     inv = world.get(Inventory, actor_eid)
@@ -33,8 +33,7 @@ def drop(world, actor_eid, item_eid, x, y, log=None):
     if not item: return False
     if item.count > 1 and item.stackable:
         item.count -= 1
-        item_drop = world.create()
-        item_drop = world.duplicate(item_eid, item_drop)
+        item_drop = world.duplicate(item_eid)
         world.add(item_drop, Position(x, y))
     else:
         inv.items.remove(item_eid)
@@ -43,23 +42,23 @@ def drop(world, actor_eid, item_eid, x, y, log=None):
     log.add(f"You drop the {name}.")
     return True
 
-def _occupy_two_hands(equipment, item_eid, name, log=None):
-    equipment.slots["hand1"] = item_eid
-    equipment.slots["hand2"] = item_eid
+def _occupy_two_hands(equip, item_eid, name, log):
+    equip.slots["hand1"] = item_eid
+    equip.slots["hand2"] = item_eid
     log.add(f"You equip the {name} in both hands.")
 
-def equip_item(world, actor_eid, item_eid, log=None):
+def equip_item(world, actor_eid, item_eid, log):
     equip = world.get(Equipment, actor_eid)
     if not equip:
         log.add("You cannot equip items.")
         return False
-    name = world.get(Name, item_eid)
+    name = world.get(Name, item_eid).text
     eq = world.get(Equippable, item_eid)
     if not eq:
         log.add(f"{name.capitalize()} is not equippable.")
         return False
     slot = eq.slot
-    if slot not in equipment.slots.keys():
+    if slot not in equip.slots.keys():
         log.add(f"Nowhere to equip {name}.")
         return False
     else:
@@ -84,7 +83,7 @@ def equip_item(world, actor_eid, item_eid, log=None):
                 log.add("You equip the {name}.")
                 return True
             elif (equip.slots[slot] is not None and
-                  unequip_slot(world, actor_eid, slot):
+                  unequip_slot(world, actor_eid, slot)):
                 equip.slots[slot] = item_eid
                 log.add("You equip the {name}.")
                 return True
@@ -92,9 +91,9 @@ def equip_item(world, actor_eid, item_eid, log=None):
                 log.add("There's already something there.")
                 return False
 
-def _free_two_hands(equipment):
-    equipment.slots["hand1"] = None
-    equipment.slots["hand2"] = None
+def _free_two_hands(equip):
+    equip.slots["hand1"] = None
+    equip.slots["hand2"] = None
 
 def unequip_slot(world, actor_eid, slot):
     equip = world.get(Equipment, actor_eid)
@@ -117,6 +116,18 @@ def unequip_slot(world, actor_eid, slot):
     inv.items.append(eid)
     return True
 
+def _consume(world, actor_eid, item_eid):
+    inv = world.get(Inventory, actor_eid)
+    if not inv: return
+    # remove from inventory (no stacks merging here; add if needed)
+    try:
+        inv.items.remove(item_eid)
+    except ValueError:
+        pass
+    # delete entity
+    for table in world.components.values():
+        table.pop(item_eid, None)
+
 def use_consumable(world, actor_eid, item_eid) -> Tuple[bool,str]:
     cons = world.get(Consumable, item_eid)
     if not cons: return (False, "Not consumable.")
@@ -136,16 +147,3 @@ def use_consumable(world, actor_eid, item_eid) -> Tuple[bool,str]:
         return (True, "You replenish oxygen.")
     else:
         return (False, f"Unknown effect {eff!r}.")
-
-def _consume(world, actor_eid, item_eid):
-    inv = world.get(Inventory, actor_eid)
-    if not inv: return
-    # remove from inventory (no stacks merging here; add if needed)
-    try:
-        inv.items.remove(item_eid)
-    except ValueError:
-        pass
-    # delete entity
-    for table in world.components.values():
-        table.pop(item_eid, None)
-

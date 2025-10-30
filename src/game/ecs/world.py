@@ -10,8 +10,8 @@ class World:
         return self._next_eid - 1
 
     def destroy(self, eid):
-        pass
-        #for comp_type in self.get
+        for comp_dict in self.components.values():
+            comp_dict.pop(eid, None)
 
     def add(self, eid, comp):
         self.components[type(comp)][eid] = comp
@@ -30,3 +30,6 @@ class World:
         for eid in set.intersection(*sets):
             yield(eid, *[self.components[t][eid] for t in types])
 
+    def duplicate(self, eid):
+        dup_eid = self.create()
+        pass

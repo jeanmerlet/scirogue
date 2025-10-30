@@ -14,9 +14,15 @@ class Input:
                 Key.DOWN_LEFT:  ("move", -1,  1),
                 Key.DOWN_RIGHT: ("move",  1,  1),
                 Key.WAIT:       ("wait",),
-                Key.PICK_UP:    ("pick_up"),
-                Key.DROP:       ("drop"),
-                Key.QUIT:       ("quit",)
+                Key.PICK_UP:    ("pick_up",),
+                Key.DROP:       ("drop",),
+                Key.QUIT:       ("quit",),
+                Key.INVENTORY:  ("open_inv",)
+            },
+            "inventory": {
+                Key.UP:         ("up",),
+                Key.DOWN:       ("down",),
+                Key.ESCAPE:     ("quit",)
             }
         }
 

@@ -65,7 +65,7 @@ class Consumable:
 
 @dataclass
 class Equippable:
-    slots: list = field(default_factory=list)
+    slot: str
     two_handed: bool = False
     attack_bonus: int = 0
     defense_bonus: int = 0

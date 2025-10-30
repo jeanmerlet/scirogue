@@ -1,3 +1,9 @@
+def clear_area(term, x, y, w, h):
+    term.clear_area(term.xs * x, term.ys * y, term.xs * w, term.ys * h)
+
+def term_print(term, x, y, text):
+    term.print(term.xs * x, term.ys * y, text)
+
 def put(term, x, y, ch):
     term.put(term.xs * x, term.ys * y, ch)
 

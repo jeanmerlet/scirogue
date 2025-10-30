@@ -13,6 +13,8 @@ class Key:
     PICK_UP     = 1010
     DROP        = 1011
     QUIT        = 1012
+    INVENTORY   = 1013
+    ESCAPE      = 1014
 
     ALIASES = {
         LEFT:       (blt.TK_LEFT,  blt.TK_KP_4, ord('h')),
@@ -26,7 +28,9 @@ class Key:
         WAIT:       (blt.TK_KP_5,  ord('.')),
         PICK_UP:    (blt.TK_G,),
         DROP:       (blt.TK_D,),
-        QUIT:       (blt.TK_Q,)
+        QUIT:       (blt.TK_Q,),
+        INVENTORY:  (blt.TK_I,),
+        ESCAPE:     (blt.TK_ESCAPE,)
     }
 
 REVERSE = {phys: logical
@@ -59,6 +63,9 @@ class Term:
 
     def clear(self):
         blt.clear()
+
+    def clear_area(self, x, y, w, h):
+        blt.clear_area(x, y, w, h)
 
     def put(self, x, y, ch):
         blt.put(x, y, ch)
