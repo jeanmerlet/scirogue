@@ -100,12 +100,14 @@ class PlayState(BaseState):
         self.logpanel.render(self.term, self.layout.log, self.log)
         self.term.refresh()
 
-    def _handle_player_intent(self, intent):
-        match intent[0]:
+    def _handle_player_cmd(self, cmd):
+        match cmd[0]:
             case "move":
-                _, dx, dy = intent
+                _, dx, dy = cmd
                 return sys_move.try_move(self.world, self.player,
                                          dx, dy, self.map, self.log)
+            case "wait":
+                return True
             case "pick_up":
                 pos = self.world.get(Position, self.player)
                 items_xy = self.map.items[(pos.x, pos.y)]
@@ -122,11 +124,11 @@ class PlayState(BaseState):
             case "drop":
                 # drop menu needed
                 return False
-            case "open_inv":
+            case "inv_menu":
                 menu = InventoryMenu(self.term, self.world, self.player,
                                      self.log, self)
                 return ("switch", menu)
-            case "open_menu":
+            case "game_menu":
                 # nothing for now
                 return False
             case "quit":
@@ -135,8 +137,8 @@ class PlayState(BaseState):
 
     def tick(self):
         self._render()
-        intent = self.input.poll(self.term)
-        outcome = self._handle_player_intent(intent)
+        cmd = self.input.poll(self.term)
+        outcome = self._handle_player_cmd(cmd)
         if isinstance(outcome, tuple) and outcome[0] == "switch":
             return outcome[1]
         if outcome or self.turn_taken:
@@ -166,10 +168,10 @@ class InventoryMenu(BaseState):
         inv = self.world.get(Inventory, self.player)
         if not inv:
             log.add("You don't have an inventory!")
-            return self.prev_state
+            return False
         if not inv.items:
             log.add("Your inventory is empty.")
-            return self.prev_state
+            return False
         out = []
         for i, eid in enumerate(inv.items):
             name = self.world.get(Name, eid).text
@@ -188,13 +190,16 @@ class InventoryMenu(BaseState):
         lines = self._lines(self.log)
         if not lines: return self.prev_state
         render_inventory(self.term, lines, self.sel)
-        intent = self.input.poll(self.term)[0]
-        match intent:
-            case "enter" or ()
-            case "up":
-                self.sel = max(0, self.sel - 1)
-            case "down":
-                self.sel = min(len(lines) - 1, self.sel + 1)
-            case "quit":
-                return self.prev_state
+        cmd = self.input.poll(self.term)
+        if len(cmd) == 1 and 97 <= ord(cmd) <= 122:
+            sel_idx = ord(cmd) - 97
+            return ItemMenu(sel_idx)
+        elif cmd == "select":
+            return ItemMenu(self.sel_idx)
+        elif cmd == "up":
+            self.sel = max(0, self.sel - 1)
+        elif cmd == "down":
+            self.sel = min(len(lines) - 1, self.sel + 1)
+        elif cmd == "quit":
+            return self.prev_state
         return self

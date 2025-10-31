@@ -1,41 +1,47 @@
-from ...terminal import Key, canonicalize
+#from ...terminal import Key, canonicalize
+from bearlibterminal import terminal as blt
 
 class Input:
     def __init__(self, state="play"):
-        self._stack = [state]
+        self.state = state
         self._maps = {
             "play": {
-                Key.LEFT:       ("move", -1,  0),
-                Key.RIGHT:      ("move",  1,  0),
-                Key.UP:         ("move",  0, -1),
-                Key.DOWN:       ("move",  0,  1),
-                Key.UP_LEFT:    ("move", -1, -1),
-                Key.UP_RIGHT:   ("move",  1, -1),
-                Key.DOWN_LEFT:  ("move", -1,  1),
-                Key.DOWN_RIGHT: ("move",  1,  1),
-                Key.WAIT:       ("wait",),
-                Key.PICK_UP:    ("pick_up",),
-                Key.DROP:       ("drop",),
-                Key.QUIT:       ("quit",),
-                Key.INVENTORY:  ("open_inv",)
+                blt.TK_LEFT:    ("move", -1,  0),
+                blt.TK_KP_4:    ("move", -1,  0),
+                blt.TK_H:       ("move", -1,  0),
+                blt.TK_RIGHT:   ("move",  1,  0),
+                blt.TK_KP_6:    ("move",  1,  0),
+                blt.TK_L:       ("move",  1,  0),
+                blt.TK_UP:      ("move",  0, -1),
+                blt.TK_KP_8:    ("move",  0, -1),
+                blt.TK_K:       ("move",  0, -1),
+                blt.TK_DOWN:    ("move",  0,  1),
+                blt.TK_KP_2:    ("move",  0,  1),
+                blt.TK_J:       ("move",  0,  1),
+                blt.TK_KP_7:    ("move", -1, -1),
+                blt.TK_Y:       ("move", -1, -1),
+                blt.TK_KP_9:    ("move",  1, -1),
+                blt.TK_U:       ("move",  1, -1),
+                blt.TK_KP_1:    ("move", -1,  1),
+                blt.TK_B:       ("move", -1,  1),
+                blt.TK_KP_3:    ("move",  1,  1),
+                blt.TK_N:       ("move",  1,  1),
+                blt.TK_KP_5:    ("wait",),
+                blt.TK_PERIOD:  ("wait",),
+                blt.TK_D:       ("drop",),
+                blt.TK_G:       ("pick_up",),
+                blt.TK_I:       ("inv_menu",),
+                blt.TK_Q:       ("quit",),
+                blt.TK_ESCAPE:  ("game_menu",)
             },
             "inventory": {
-                Key.UP:         ("up",),
-                Key.DOWN:       ("down",),
-                Key.ESCAPE:     ("quit",)
+                blt.TK_UP:      "up",
+                blt.TK_DOWN:    "down",
+                blt.TK_ENTER:   "select",
+                blt.TK_ESCAPE:  "quit",
             }
         }
 
-    def context(self):
-        return self._stack[-1]
-
-    def push(self, context):
-        self._stack.append(context)
-
-    def pop(self):
-        if len(self._stack) > 1: self._stack.pop()
-
     def poll(self, term):
-        k_phys = term.read()
-        k = canonicalize(k_phys)
-        return self._maps[self.context()].get(k, "noop")
+        key = term.read()
+        return self._maps[self.state].get(key, "noop")

@@ -1,45 +1,5 @@
 from bearlibterminal import terminal as blt
 
-class Key:
-    LEFT        = 1001
-    RIGHT       = 1002
-    UP          = 1003
-    DOWN        = 1004
-    UP_LEFT     = 1005
-    UP_RIGHT    = 1006
-    DOWN_LEFT   = 1007
-    DOWN_RIGHT  = 1008
-    WAIT        = 1009
-    PICK_UP     = 1010
-    DROP        = 1011
-    QUIT        = 1012
-    INVENTORY   = 1013
-    ESCAPE      = 1014
-
-    ALIASES = {
-        LEFT:       (blt.TK_LEFT,  blt.TK_KP_4, ord('h')),
-        RIGHT:      (blt.TK_RIGHT, blt.TK_KP_6, ord('l')),
-        UP:         (blt.TK_UP,    blt.TK_KP_8, ord('k')),
-        DOWN:       (blt.TK_DOWN,  blt.TK_KP_2, ord('j')),
-        UP_LEFT:    (blt.TK_KP_7,  ord('y')),
-        UP_RIGHT:   (blt.TK_KP_9,  ord('u')),
-        DOWN_LEFT:  (blt.TK_KP_1,  ord('b')),
-        DOWN_RIGHT: (blt.TK_KP_3,  ord('n')),
-        WAIT:       (blt.TK_KP_5,  ord('.')),
-        PICK_UP:    (blt.TK_G,),
-        DROP:       (blt.TK_D,),
-        QUIT:       (blt.TK_Q,),
-        INVENTORY:  (blt.TK_I,),
-        ESCAPE:     (blt.TK_ESCAPE,)
-    }
-
-REVERSE = {phys: logical
-           for logical, phys_list in Key.ALIASES.items()
-           for phys in phys_list}
-
-def canonicalize(physical_key: int) -> int:
-    return REVERSE.get(physical_key)
-
 class Term:
     def __init__(self):
         self.font_path = "../assets/fonts/CourierPrime-Regular.ttf"
