@@ -1,44 +1,21 @@
 from .ecs.systems.input import Input
-from .ecs.components import Inventory, Item, Name, Description, Renderable
-from .ui.inventory import render_inventory, render_item
+from .ecs.components import Inventory, Item, Name, Renderable
+from .ui.inventory import render_inventory
+from .ui.inspect import render_desc
 
-class ItemMenu():
-    def __init__(self, term, world, player_eid, item_eid, log, prev_state):
+class DescMenu():
+    def __init__(self, term, world, ent_eid, prev_state):
         self.term = term
-        self.input = Input("item")
+        self.input = Input("desc")
         self.world = world
-        self.player = player_eid
-        self.item = item_eid
-        self.log = log
+        self.eid = ent_eid
         self.prev_state = prev_state
-        self.prev_state.turn_taken = False
-
-    def _item_desc(self):
-        ttext = self.world.get(Name, self.item).text.capitalize()
-        tcolor = self.world.get(Renderable, self.item).color
-        title = f"[font=gui][color={tcolor}]{ttext}[/color]"
-        tlen = len(ttext)
-        desc = self.world.get(Description, self.item).text
-        cmds = ""
-        return title, tlen, desc, cmds
 
     def tick(self):
-        title, tlen, desc, item_cmds = self._item_desc()
-        render_item(self.term, self.world, self.item, title, tlen, desc,
-                    item_cmds)
+        render_desc(self.term, self.world, self.eid)
         cmd = self.input.poll(self.term)
         if not cmd: return self
-        elif cmd == "drop":
-            return self.prev_state.prev_state
-        elif cmd == "equip":
-            if equip_item(self.world, self.player, self.item, self.log):
-                return self.prev_state.prev_state
-        elif cmd == "unequip":
-            return self.prev_state.prev_state
-        elif cmd == "use":
-            return self.prev_state.prev_state
-        elif cmd == "quit":
-            return self.prev_state
+        if cmd[0] == "quit": return self.prev_state
         return self
 
 class InventoryMenu():
@@ -85,8 +62,7 @@ class InventoryMenu():
             num_items = len(self.world.get(Inventory, self.player).items)
             if sel_idx < num_items:
                 item = self.world.get(Inventory, self.player).items[sel_idx]
-                return ItemMenu(self.term, self.world, self.player, item,
-                                self.log, self)
+                return DescMenu(self.term, self.world, item, self)
         elif cmd == "select":
             item = self.world.get(Inventory, self.player).items[self.sel_idx]
             return ItemMenu(self.term, self.world, self.player, item,

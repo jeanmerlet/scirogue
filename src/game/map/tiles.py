@@ -50,6 +50,18 @@ class Map:
         return bool(self.block[x, y] or self.edge[x, y] or
                     self.actors[x, y] >= 0)
 
+    def sorted_visible_entities(self, cx, cy):
+        vis_ent = np.argwhere(self.visible)
+        ents = []
+        dists = []
+        for x, y in vis_ent:
+            ent = self.actors[x, y]
+            if ent > 0:
+                ents.append(ent)
+                dists.append(np.sqrt((cx-x)**2 + (cy-y)**2))
+        ents = np.array(ents)[np.argsort(dists)]
+        return ents
+
     def open_door(self, x, y):
         self.doors_closed[x, y] = False
         self.doors_open[x, y] = True

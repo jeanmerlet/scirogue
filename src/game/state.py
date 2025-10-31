@@ -11,10 +11,13 @@ from .factories.actors import spawn_actor
 from .factories.items import spawn_item
 from .ui.layout import make_layout
 from .ui.panels import SidebarPanel, LogPanel
+from .ui.widgets import clear_area
+from .ui.inspect import draw_inspect
 from .ecs.systems.hud import get_player_stats
 from .services.log import MessageLog
-from .inventory_state import InventoryMenu
+from .menu import InventoryMenu, DescMenu
 from random import choice, randint
+import numpy as np
 
 class TitleState():
     def __init__(self, term):
@@ -119,8 +122,8 @@ class PlayState():
                 # drop menu needed
                 return False
             case "inspect":
-                state = InspectState(self.term, self.world, self.player,
-                                     self.log, self)
+                state = InspectState(self.term, self.world, self.map,
+                                     self.player, self)
                 return ("switch", state)
             case "inv_menu":
                 menu = InventoryMenu(self.term, self.world, self.player,
@@ -152,31 +155,60 @@ class MenuState():
        pass 
 
 class InspectState():
-    def __init__(self, term):
+    def __init__(self, term, world, game_map, player, prev_state):
         self.term = term
         self.input = Input("inspect")
         self.world = world
         self.map = game_map
         self.player = player
         pos = self.world.get(Position, self.player)
+        self.vis_ent = self.map.sorted_visible_entities(pos.x, pos.y)
         self.x, self.y = pos.x, pos.y
+        self.target = None
+        self.prev_state = prev_state
+        self.prev_state.turn_taken = False
+
+    def _next_target(self):
+        num_ents = len(self.vis_ent)
+        if num_ents == 0: return None
+        if self.target is not None:
+            idx = (self.vis_ent == self.target).argmax()
+        else:
+            return self.vis_ent[0]
+        next_idx = (idx + 1) % num_ents
+        return self.vis_ent[next_idx]
 
     def _update_xy(self, x, y):
-        self.x = x if 0 <= x <= game_map.w
-        self.y = y if 0 <= y <= game_map.h
+        self.x = x if 0 <= x <= self.map.w else self.x
+        self.y = y if 0 <= y <= self.map.h else self.y
+
+    def _render(self):
+        clear_area(self.term, 0, 0, self.map.w + 1, self.map.h + 1)
+        sys_render.draw(self.term, self.world, self.map.draw, 
+                        self.map.visible)
+        self.term.composition_on()
+        draw_inspect(self.term, self.x, self.y)
+        self.term.composition_off()
+        self.term.refresh()
 
     def tick(self):
-        render_inspect(x, y)
+        self._render()
         cmd = self.input.poll(self.term)
         if not cmd: return self
         if cmd[0] == "move":
             _, dx, dy = cmd
             self._update_xy(self.x + dx, self.y + dy)
-        elif cmd[0] == "enter":
-            
+            if self.map.actors[self.x, self.y] > 0:
+                self.target = self.map.actors[self.x, self.y]
+            else:
+                self.target = None
+        elif cmd[0] == "select":
+            return DescMenu(self.term, self.world, self.target, self)
         elif cmd[0] == "next":
-            
+            self.target = self._next_target()
+            if self.target is not None:
+                pos = self.world.get(Position, self.target)
+                self.x, self.y = pos.x, pos.y
         elif cmd[0] == "quit":
             return self.prev_state
         return self
-

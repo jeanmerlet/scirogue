@@ -27,6 +27,12 @@ class Term:
     def clear_area(self, x, y, w, h):
         blt.clear_area(x, y, w, h)
 
+    def composition_on(self):
+        blt.composition(1)
+        
+    def composition_off(self):
+        blt.composition(0)
+
     def put(self, x, y, ch):
         blt.put(x, y, ch)
 

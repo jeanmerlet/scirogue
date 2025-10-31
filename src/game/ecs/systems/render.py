@@ -1,4 +1,5 @@
 from ..components import Position, Renderable
+from ...ui.widgets import put
 
 def draw(term, world, draw_map, visible):
     xs, ys = term.xs, term.ys
@@ -10,4 +11,4 @@ def draw(term, world, draw_map, visible):
     batch.sort(key=lambda t: t[0])
     for _, pos, ren in batch:
         term.color(ren.color)
-        term.put(term.xs*pos.x, term.ys*pos.y, ren.ch)
+        put(term, pos.x, pos.y, ren.ch)

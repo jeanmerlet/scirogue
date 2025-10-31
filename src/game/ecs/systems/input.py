@@ -61,15 +61,13 @@ class Input:
                 blt.TK_B:       ("move", -1,  1),
                 blt.TK_KP_3:    ("move",  1,  1),
                 blt.TK_N:       ("move",  1,  1),
+                blt.TK_ENTER:   ("select",),
+                blt.TK_V:       ("select",),
+                blt.TK_TAB:     ("next",),
                 blt.TK_ESCAPE:  ("quit",)
             },
-            "item": {
-                blt.TK_D:       "drop",
-                blt.TK_T:       "throw",
-                blt.TK_R:       "remove",
-                blt.TK_U:       "use",
-                blt.TK_W:       "wield",
-                blt.TK_ESCAPE:  "quit"
+            "desc": {
+                blt.TK_ESCAPE:  ("quit",)
             }
         }
 
