@@ -7,7 +7,7 @@ def pick_up(world, actor_eid, item_eid, log):
     item = world.get(Item, item_eid)
     if not item: return False
     name = world.get(Name, item_eid).text
-    if item.stackable:
+    if item.stackable and len(inv.items) > 0:
         inv_names = [world.get(Name, eid).text for eid in inv.items]
         inv_items = [world.get(Item, eid) for eid in inv.items]
         for i, inv_name in enumerate(inv_names):

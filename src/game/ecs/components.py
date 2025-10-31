@@ -32,6 +32,10 @@ class Name:
     text: str
 
 @dataclass
+class Description:
+    text: str
+
+@dataclass
 class AI:
     pass
 

@@ -7,6 +7,7 @@ ITEMS = {
         "name": "stimpack",
         "effect_id": "stimpack",
         "stackable": True,
+        "desc": "A high-tech disposable injector that floods your system with nanodrugs, nearly instantly causing your wounds to heal.",
     },
     "oxygen_can": {
         "kind": "consumable",
@@ -15,6 +16,7 @@ ITEMS = {
         "name": "oxygen canister",
         "effect_id": "oxygen_can",
         "stackable": True,
+        "desc": "",
     },
     # --- Weapons --- #
     "crowbar": {
@@ -25,6 +27,7 @@ ITEMS = {
         "slot": "hand1",
         "two_handed": False,
         "attack_bonus": 2,
+        "desc": "",
     },
     "coil_rifle": {
         "kind": "equip",
@@ -34,6 +37,7 @@ ITEMS = {
         "slot": "hand1",
         "two_handed": True,
         "attack_bonus": 4,
+        "desc": "",
     },
     # --- Headgear --- #
     "targeting_visor": {
@@ -43,6 +47,7 @@ ITEMS = {
         "name": "targeting visor",
         "slot": "head",
         "attack_bonus": 1,
+        "desc": "",
     },
     # --- Bodygear --- #
     "stealth_suit": {
@@ -53,6 +58,7 @@ ITEMS = {
         "slot": "body",
         "defense_bonus": 1,
         "oxy_bonus": 1,
+        "desc": "",
     },
     # --- Footgear --- #
     "mag_boots": {
@@ -62,5 +68,6 @@ ITEMS = {
         "name": "mag boots",
         "slot": "feet",
         "defense_bonus": 1,
+        "desc": "",
     },
 }

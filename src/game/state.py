@@ -11,27 +11,23 @@ from .factories.actors import spawn_actor
 from .factories.items import spawn_item
 from .ui.layout import make_layout
 from .ui.panels import SidebarPanel, LogPanel
-from .ui.inventory import render_inventory
 from .ecs.systems.hud import get_player_stats
 from .services.log import MessageLog
+from .inventory_state import InventoryMenu
 from random import choice, randint
 
-class BaseState:
+class TitleState():
     def __init__(self, term):
         self.term = term
 
-    def tick(self):
-        raise NotImplementedError
-
-class TitleState(BaseState):
     def tick(self):
         self.term.clear()
         self.term.refresh()
         return PlayState(self.term)
 
-class PlayState(BaseState):
+class PlayState():
     def __init__(self, term):
-        super().__init__(term)
+        self.term = term
         self.input = Input("play")
         self.map = Map(80, 52)
         self.map.generate_bsp(seed=102, reflect="h")
@@ -101,6 +97,7 @@ class PlayState(BaseState):
         self.term.refresh()
 
     def _handle_player_cmd(self, cmd):
+        if not cmd: return False
         match cmd[0]:
             case "move":
                 _, dx, dy = cmd
@@ -109,21 +106,22 @@ class PlayState(BaseState):
             case "wait":
                 return True
             case "pick_up":
+                # TODO: pick up menu needed if more than one item
                 pos = self.world.get(Position, self.player)
                 items_xy = self.map.items[(pos.x, pos.y)]
                 num_items = len(items_xy)
                 if num_items == 0:
                     return False
-                elif num_items == 1:
-                    item = items_xy[0]
-                    return pick_up(self.world, self.player, item, self.log)
                 else:
-                    # pick up menu needed if more than one item
                     item = items_xy[0]
                     return pick_up(self.world, self.player, item, self.log)
             case "drop":
                 # drop menu needed
                 return False
+            case "inspect":
+                state = InspectState(self.term, self.world, self.player,
+                                     self.log, self)
+                return ("switch", state)
             case "inv_menu":
                 menu = InventoryMenu(self.term, self.world, self.player,
                                      self.log, self)
@@ -145,61 +143,40 @@ class PlayState(BaseState):
             take_monster_turns(self.world, self.map, self.player, self.log)
         return self
 
-class MenuState(BaseState):
+class MenuState():
     def __init__(self, term):
-        super().__init__(term)
+        self.term = term
         self.input = Input("menu")
 
     def tick(self):
        pass 
 
-class InventoryMenu(BaseState):
-    def __init__(self, term, world, player_eid, log, prev_state):
-        super().__init__(term)
-        self.input = Input("inventory")
+class InspectState():
+    def __init__(self, term):
+        self.term = term
+        self.input = Input("inspect")
         self.world = world
-        self.player = player_eid
-        self.log = log
-        self.prev_state = prev_state
-        self.prev_state.turn_taken = False
-        self.sel = 0
+        self.map = game_map
+        self.player = player
+        pos = self.world.get(Position, self.player)
+        self.x, self.y = pos.x, pos.y
 
-    def _lines(self, log):
-        inv = self.world.get(Inventory, self.player)
-        if not inv:
-            log.add("You don't have an inventory!")
-            return False
-        if not inv.items:
-            log.add("Your inventory is empty.")
-            return False
-        out = []
-        for i, eid in enumerate(inv.items):
-            name = self.world.get(Name, eid).text
-            item = self.world.get(Item, eid)
-            color = self.world.get(Renderable, eid).color
-            idx = chr(i + 97)
-            if item.stackable and item.count > 1:
-                line = f"{item.count} [color={color}]{name}s[/color]."
-            else:
-                line = f"A [color={color}]{name}[/color]."
-            line = idx + ") " + line
-            out.append(line)
-        return out
+    def _update_xy(self, x, y):
+        self.x = x if 0 <= x <= game_map.w
+        self.y = y if 0 <= y <= game_map.h
 
     def tick(self):
-        lines = self._lines(self.log)
-        if not lines: return self.prev_state
-        render_inventory(self.term, lines, self.sel)
+        render_inspect(x, y)
         cmd = self.input.poll(self.term)
-        if len(cmd) == 1 and 97 <= ord(cmd) <= 122:
-            sel_idx = ord(cmd) - 97
-            return ItemMenu(sel_idx)
-        elif cmd == "select":
-            return ItemMenu(self.sel_idx)
-        elif cmd == "up":
-            self.sel = max(0, self.sel - 1)
-        elif cmd == "down":
-            self.sel = min(len(lines) - 1, self.sel + 1)
-        elif cmd == "quit":
+        if not cmd: return self
+        if cmd[0] == "move":
+            _, dx, dy = cmd
+            self._update_xy(self.x + dx, self.y + dy)
+        elif cmd[0] == "enter":
+            
+        elif cmd[0] == "next":
+            
+        elif cmd[0] == "quit":
             return self.prev_state
         return self
+
