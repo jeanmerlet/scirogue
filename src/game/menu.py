@@ -65,8 +65,7 @@ class InventoryMenu():
                 return DescMenu(self.term, self.world, item, self)
         elif cmd == "select":
             item = self.world.get(Inventory, self.player).items[self.sel_idx]
-            return ItemMenu(self.term, self.world, self.player, item,
-                            self.log, self)
+            return DescMenu(self.term, self.world, item, self)
         elif cmd == "up":
             self.sel_idx = max(0, self.sel_idx - 1)
         elif cmd == "down":

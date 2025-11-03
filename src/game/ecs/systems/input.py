@@ -32,6 +32,8 @@ class Input:
                 blt.TK_I:       ("inv_menu",),
                 blt.TK_Q:       ("quit",),
                 blt.TK_X:       ("inspect",),
+                blt.TK_GREATER: ("use_elevator",),
+                blt.TK_GRAVE:   ("show_all",),
                 blt.TK_ESCAPE:  ("game_menu",)
             },
             "inventory": {

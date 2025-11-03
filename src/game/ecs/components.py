@@ -1,9 +1,27 @@
 from dataclasses import dataclass, field
 
 @dataclass
+class ElevatorLanding:
+    ship_name: str
+    shaft_id: int
+    access: set = field(default_factory=set)
+    locked: set = field(default_factory=set)
+    requires_power: bool = True
+
+@dataclass
+class Keycard:
+    tags: set = field(default_factory=set)
+
+@dataclass
+class PowerGrid:
+    ship_id: int
+    powered: bool = True
+
+@dataclass
 class Position:
     x: int
     y: int
+    z: int
 
 @dataclass
 class Renderable:

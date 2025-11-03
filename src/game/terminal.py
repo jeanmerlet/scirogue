@@ -34,7 +34,7 @@ class Term:
         blt.composition(0)
 
     def put(self, x, y, ch):
-        blt.put(x, y, ch)
+        blt.put(int(x), int(y), ch)
 
     def put_ext(self, x, y, ch, corners, dx=0, dy=0):
         blt.put_ext(x, y, dx, dy, ch, corners)

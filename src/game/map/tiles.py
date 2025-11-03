@@ -1,10 +1,11 @@
-import numpy as np
-import random
+from ..ecs.components import Position, Description, Name
 from collections import defaultdict
+import numpy as np
 
 class Map:
-    def __init__(self, w, h):
-        self.w, self.h = w, h
+    def __init__(self, rng, w, h, z):
+        self.rng = rng
+        self.w, self.h, self.z = w, h, z
         self.floor = np.zeros((w, h), dtype=np.bool_)
         self.walls = np.zeros((w, h), dtype=np.bool_)
         self.doors_open = np.zeros((w, h), dtype=np.bool_)
@@ -14,16 +15,18 @@ class Map:
         self.visible = np.zeros((w, h), dtype=np.bool_)
         self.explored = np.zeros((w, h), dtype=np.bool_)
         self.actors = np.full((w, h), -1, dtype=int)
+        self.elevators = np.full((w, h), -1, dtype=int)
         self.items = defaultdict(list) 
-        # for debugging
-        self.centers = np.zeros((w, h), dtype=np.bool_)
-        self.peris = np.zeros((w, h), dtype=np.bool_)
         # map edge
         self.edge = np.zeros((w, h), dtype=np.bool_)
         self.edge[0, :]  = True
         self.edge[-1, :] = True
         self.edge[:, 0]  = True
         self.edge[:, -1] = True
+        # for debugging
+        self.centers = np.zeros((w, h), dtype=np.bool_)
+        self.peris = np.zeros((w, h), dtype=np.bool_)
+        self.show_all = False
 
     def _clear_masks(self):
         self.floor.fill(False)
@@ -35,11 +38,6 @@ class Map:
         self.centers.fill(False)
         self.peris.fill(False)
 
-    def _pick_player_start(self, floor, seed):
-        rng = random.Random(seed)
-        px, py = rng.choice(list(floor))
-        return px, py
-
     def opaque(self):
         return self.walls | self.edge | self.doors_closed
 
@@ -50,15 +48,26 @@ class Map:
         return bool(self.block[x, y] or self.edge[x, y] or
                     self.actors[x, y] >= 0)
 
-    def sorted_visible_entities(self, cx, cy):
-        vis_ent = np.argwhere(self.visible)
+    def rand_floor_xy(self, unblocked=True):
+        fx, fy = np.nonzero(self.floor)
+        i = self.rng.randrange(fx.size)
+        x, y = fx[i], fy[i]
+        if not unblocked:
+            return int(x), int(y)
+        else:
+            if not self.blocked(x, y):
+                return int(x), int(y)
+            else:
+                self.rand_floor_xy()
+
+    def sorted_vis_ents(self, world, cx, cy):
         ents = []
         dists = []
-        for x, y in vis_ent:
-            ent = self.actors[x, y]
-            if ent > 0:
-                ents.append(ent)
-                dists.append(np.sqrt((cx-x)**2 + (cy-y)**2))
+        for eid, pos, _, _ in world.view(Position, Description, Name):
+            if pos.z != self.z: continue
+            if not self.visible[pos.x, pos.y]: continue
+            ents.append(eid)
+            dists.append((cx-pos.x)**2 + (cy-pos.y)**2)
         ents = np.array(ents)[np.argsort(dists)]
         return ents
 
@@ -67,105 +76,35 @@ class Map:
         self.doors_open[x, y] = True
         self.block[x, y] = False
 
-    def generate_bsp(self, seed=None,
-                     min_leaf=6, max_leaf=20,
-                     min_rsize=1, max_rsize=10,
-                     reflect="none", border=1):
-        from .bsp import generate_bsp
-        rooms, floor, walls, doors_closed, windows, centers, peris = generate_bsp(
-            self.w, self.h, seed=seed,
-            min_leaf=min_leaf, max_leaf=max_leaf,
-            min_rsize=min_rsize, max_rsize=max_rsize,
-            border=border, reflect=reflect
-        )
-        self.rooms = rooms
+    def generate_map(self, reflect, kind="bsp", min_rsize=1, max_rsize=10):
+        if kind == "bsp":
+            from .bsp import generate_bsp
+            tiles = generate_bsp(self.rng, self.w, self.h, reflect,
+                                 min_rsize, max_rsize)
+        self.rooms = tiles["rooms"]
         self._clear_masks()
         # add floors
-        fx, fy = zip(*floor)
+        fx, fy = zip(*tiles["floor"])
         self.floor[list(fx), list(fy)] = True
-        # player starts on a random floor tile
-        self.px, self.py = self._pick_player_start(floor, seed)
         # add walls
-        wx, wy = zip(*walls)
+        wx, wy = zip(*tiles["walls"])
         self.walls[list(wx), list(wy)] = True
         self.block[list(wx), list(wy)] = True
         # add doors
-        dx, dy = zip(*doors_closed)
-        self.doors_closed[list(dx), list(dy)] = True
-        self.block[list(dx), list(dy)] = True
-        self.walls[list(dx), list(dy)] = False
+        if tiles["doors"]:
+            dx, dy = zip(*tiles["doors"])
+            self.doors_closed[list(dx), list(dy)] = True
+            self.block[list(dx), list(dy)] = True
+            self.walls[list(dx), list(dy)] = False
         # add windows
-        wx, wy = zip(*windows)
-        self.windows[list(wx), list(wy)] = True
-        self.block[list(wx), list(wy)] = True
-        self.walls[list(dx), list(dy)] = False
+        if tiles["windows"]:
+            wx, wy = zip(*tiles["windows"])
+            self.windows[list(wx), list(wy)] = True
+            self.block[list(wx), list(wy)] = True
+            self.walls[list(dx), list(dy)] = False
         # room centers for debugging
-        cx, cy = zip(*centers)
+        cx, cy = zip(*tiles["centers"])
         self.centers[list(cx), list(cy)] = True
         # room perimeters for debugging
-        px, py = zip(*peris)
+        px, py = zip(*tiles["perims"])
         self.peris[list(px), list(py)] = True
-
-    def draw(self, term):
-        #self.visible = np.ones((self.w, self.h), dtype=np.bool_)
-        xs, ys = term.xs, term.ys # x and y scale factors
-        # floors
-        term.color("grey")
-        fx, fy = np.nonzero(self.floor & self.visible)
-        for x, y in zip(fx, fy):
-            term.put(xs * int(x), ys * int(y), ".")
-        term.color("darker grey")
-        fx, fy = np.nonzero(self.floor & ~self.visible &
-                            self.explored)
-        for x, y in zip(fx, fy):
-            term.put(xs * int(x), ys * int(y), ".")
-        # walls
-        term.color("grey")
-        wx, wy = np.nonzero(self.walls & self.visible)
-        for x, y in zip(wx, wy):
-            term.put(xs * int(x), ys * int(y), "#")
-        term.color("darker grey")
-        wx, wy = np.nonzero(self.walls & ~self.visible &
-                            self.explored)
-        for x, y in zip(wx, wy):
-            term.put(xs * int(x), ys * int(y), "#")
-        # doors
-        term.color("dark blue")
-        dx, dy = np.nonzero(self.doors_closed & self.visible)
-        for x, y in zip(dx, dy):
-            term.put(xs * int(x), ys * int(y), "+")
-        dx, dy = np.nonzero(self.doors_open & self.visible)
-        for x, y in zip(dx, dy):
-            term.put(xs * int(x), ys * int(y), "/")
-        term.color("darker grey")
-        dx, dy = np.nonzero(self.doors_closed & ~self.visible &
-                            self.explored)
-        for x, y in zip(dx, dy):
-            term.put(xs * int(x), ys * int(y), "+")
-        dx, dy = np.nonzero(self.doors_open & ~self.visible &
-                            self.explored)
-        for x, y in zip(dx, dy):
-            term.put(xs * int(x), ys * int(y), "/")
-        # windows
-        term.color("dark blue")
-        wx, wy = np.nonzero(self.windows & self.visible)
-        for x, y in zip(wx, wy):
-            term.put(xs * int(x), ys * int(y), "o")
-        term.color("darker grey")
-        wx, wy = np.nonzero(self.windows & ~self.visible &
-                            self.explored)
-        for x, y in zip(wx, wy):
-            term.put(xs * int(x), ys * int(y), "o")
-        # centers (for debugging)
-        term.color("red")
-        cx, cy = np.nonzero(self.centers & self.visible)
-        for x, y in zip(cx, cy):
-            break
-            term.put(xs * int(x), ys * int(y), "*")
-        # perimeters (for debugging)
-        term.color("green")
-        px, py = np.nonzero(self.peris & self.visible)
-        for x, y in zip(px, py):
-            break
-            term.put(xs * int(x), ys * int(y), "*")
-

@@ -1,4 +1,4 @@
-import random
+#import random
 
 class Room:
     def __init__(self, x, y, w, h):
@@ -207,9 +207,9 @@ def _place_doors(rooms, floor, walls):
 def _place_windows(rooms, walls, rng):
     windows = set()
     for r in rooms:
-        # 0 to 3 windows per room
+        # 0 to 2 windows per room
         num_w = 0
-        max_w = rng.randint(0, 3)
+        max_w = rng.randint(0, 2)
         counter = 0
         peri = list(r.perimeter(corners=True))
         while num_w < max_w:
@@ -285,32 +285,25 @@ def _connect_center(floor, walls, doors, w, h, edgeh, edgev, mode):
                 num_doors += 1
     return doors
 
-def generate_bsp(w, h, seed=None,
-                 min_leaf=6, max_leaf=20,
-                 min_rsize=1, max_rsize=10,
-                 border=1, reflect="none",
-                 margin_min=5, margin_max=10):
-    rng = random.Random(seed)
-    margin = rng.randint(margin_min, margin_max)
-    # allow for smaller margins if map is tiny
-    max_allowed = min((w - 2) // 2, (h - 2) // 2) 
-    margin = max(0, min(margin, max_allowed))
+def generate_bsp(rng, w, h, reflect, min_rsize=1, max_rsize=10):
+    min_leaf, max_leaf = 6, 20
+    margin = rng.randint(5, 10)
+    border = 1
     # halve width and/or height if reflecting
-    mapw = w
-    maph = h
+    map_w, map_h = w, h
     if reflect in ["h", "hv"]:
-        mapw = w // 2
+        map_w = w // 2
     if reflect in ["v", "hv"]:
-        maph = h // 2
+        map_h = h // 2
     # build the BSP only inside the inner rectangle
     inner_x = margin
     inner_y = margin
-    inner_w = mapw - 2 * margin
-    inner_h = maph - 2 * margin
+    inner_w = map_w - 2 * margin
+    inner_h = map_h - 2 * margin
     if reflect in ["h", "hv"]:
-        inner_w = mapw - margin
+        inner_w = map_w - margin
     if reflect in ["v", "hv"]:
-        inner_h = maph - margin
+        inner_h = map_h - margin
     # run BSP
     root = BSPNode(Room(inner_x + 1, inner_y + 1, inner_w - 2, inner_h - 2))
     _split(root, rng, min_leaf=min_leaf, max_leaf=max_leaf)
@@ -331,8 +324,8 @@ def generate_bsp(w, h, seed=None,
     # reflect if reflecting
     edgeh = max([xy[0] for xy in walls])
     edgev = max([xy[1] for xy in walls])
-    gaph = 2 * (mapw - edgeh)
-    gapv = 2 * (maph - edgev)
+    gaph = 2 * (map_w - edgeh)
+    gapv = 2 * (map_h - edgev)
     tiles = [floor, walls, doors, windows]
     floor, walls, doors, windows = _reflect_tiles(tiles, w, h, gaph, gapv,
                                                   reflect)
@@ -340,8 +333,16 @@ def generate_bsp(w, h, seed=None,
     doors = _connect_center(floor, walls, doors, w, h, edgeh, edgev, reflect)
     # for debugging
     centers = [r.center() for r in rooms]
-    peris = set()
+    perims = set()
     for r in rooms:
         for p in r.perimeter():
-            peris.add(p)
-    return rooms, floor, walls, doors, windows, centers, peris
+            perims.add(p)
+    tilesets = {}
+    tilesets["rooms"] = rooms
+    tilesets["floor"] = floor
+    tilesets["walls"] = walls
+    tilesets["doors"] = doors
+    tilesets["windows"] = windows
+    tilesets["centers"] = centers
+    tilesets["perims"] = perims
+    return tilesets
