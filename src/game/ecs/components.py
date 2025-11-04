@@ -1,11 +1,16 @@
 from dataclasses import dataclass, field
 
 @dataclass
+class ElevatorShaft:
+    shaft_id: int
+    landings: dict = field(default_factory=dict) # level: (x, y)
+
+@dataclass
 class ElevatorLanding:
     ship_name: str
     shaft_id: int
-    access: set = field(default_factory=set)
-    locked: set = field(default_factory=set)
+    access: set = field(default_factory=set) # levels
+    locked: set = field(default_factory=set) # levels
     requires_power: bool = True
 
 @dataclass

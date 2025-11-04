@@ -12,9 +12,9 @@ from .factories import spawn_actor, spawn_item, spawn_elevator
 from .ui.layout import make_layout
 from .ui.panels import SidebarPanel, LogPanel
 from .ui.widgets import clear_area
-from .ui.inspect import draw_inspect
+from .ui.description import draw_inspect
 from .services.log import MessageLog
-from .menu import InventoryMenu, DescMenu
+from .menu import InventoryMenu, DescMenu, ElevatorMenu, EquipmentMenu
 import numpy as np
 import random
 
@@ -30,9 +30,9 @@ class TitleState():
 class PlayState():
     def __init__(self, term):
         self.term = term
-        self.input = Input("play")
+        self.input = Input("play", ["play_moves", "play"])
         self.rng = random.Random()
-        self.rng.seed(101)
+        self.rng.seed(103)
         self.world = World()
         player = self.world.create()
         self.world.add(player, Name("player"))
@@ -56,7 +56,7 @@ class PlayState():
         self.world.add(player, Position(px, py, pz))
         self.map = self.derelict.maps[pz]
         self.map.actors[px, py] = player
-        self._populate_map(pz)
+        self._populate_map()
         self.log = MessageLog()
         self.sidebar = SidebarPanel()
         self.logpanel = LogPanel()
@@ -65,9 +65,10 @@ class PlayState():
         self.layout = make_layout(self.term, self.map.w, self.map.h,
                                   sidebar_w, log_h)
 
-    def _populate_map(self, z):
+    def _populate_map(self):
         # TODO: stack items when duplicating in same spot (or increase count)
         pos = self.world.get(Position, self.player)
+        z = self.map.z
         for r in self.map.rooms:
             num = min(r.size(), self.rng.randint(0, 2))
             for _ in range(num):
@@ -129,14 +130,19 @@ class PlayState():
                 menu = InventoryMenu(self.term, self.world, self.player,
                                      self.log, self)
                 return ("switch", menu)
+            case "equip_menu":
+                menu = EquipmentMenu(self.term, self.world, self.player,
+                                     self.log, self)
+                return ("switch", menu)
             case "use_elevator":
                 pos = self.world.get(Position, self.player)
-                if self.map.elevators[pos.x, pos.y]:
-                    menu = ElevatorMenu(self.term, self.world, self.player,
-                                        self.log, self)
-                    return ("switch", menu)
-                else:
+                elev = self.map.elevators[pos.x, pos.y]
+                if elev < 0:
+                    self.log.add("There's no elevator here.")
                     return False
+                menu = ElevatorMenu(self.term, self.world, self.derelict,
+                                    self.player, elev, self.log, self)
+                return ("switch", menu)
             case "game_menu":
                 # nothing for now
                 return False
@@ -146,6 +152,15 @@ class PlayState():
             case "quit":
                 return ("switch", None)
         return self
+
+    def change_level(self, new_z, x, y):
+        pos = self.world.get(Position, self.player)
+        self.map.actors[pos.x, pos.y] = -1
+        self.map = self.derelict.maps[new_z]
+        self.map.z = new_z
+        pos.x, pos.y, pos.z = x, y, new_z
+        self.map.actors[pos.x, pos.y] = self.player
+        self.turn_taken = True
 
     def tick(self):
         self._render()
@@ -168,7 +183,8 @@ class MenuState():
 class InspectState():
     def __init__(self, term, world, game_map, player, prev_state):
         self.term = term
-        self.input = Input("inspect")
+        self.input = Input("inspect", ["play_moves", "inspect", "next",
+                                       "cancel"])
         self.world = world
         self.map = game_map
         self.player = player

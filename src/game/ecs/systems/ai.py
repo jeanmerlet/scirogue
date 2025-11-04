@@ -7,7 +7,7 @@ def _adjacent(ax, ay, bx, by):
 def _sign(n):
     return (n > 0) - (n < 0)
 
-def _move_towards(world, eid, tx, ty, game_map, log=None):
+def _move_towards(world, eid, tx, ty, game_map, log):
     pos = world.get(Position, eid)
     dx = _sign(tx - pos.x)
     dy = _sign(ty - pos.y)
@@ -22,12 +22,13 @@ def _move_towards(world, eid, tx, ty, game_map, log=None):
             return True
     return False
 
-def take_monster_turns(world, game_map, player_eid, log=None):
+def take_monster_turns(world, game_map, player_eid, log):
     ppos = world.get(Position, player_eid)
     if not ppos: return
     # sort sentient ents by distance from player (closest go first)
     batch = []
     for eid, pos, _ in world.view(Position, Actor):
+        if pos.z != game_map.z: continue
         if eid == player_eid: continue
         if not world.has(eid, AI): continue
         batch.append((eid, pos))

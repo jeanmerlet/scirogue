@@ -50,15 +50,11 @@ class Map:
 
     def rand_floor_xy(self, unblocked=True):
         fx, fy = np.nonzero(self.floor)
-        i = self.rng.randrange(fx.size)
-        x, y = fx[i], fy[i]
-        if not unblocked:
-            return int(x), int(y)
-        else:
-            if not self.blocked(x, y):
-                return int(x), int(y)
-            else:
-                self.rand_floor_xy()
+        while True:
+            i = self.rng.randrange(fx.size)
+            x, y = int(fx[i]), int(fy[i])
+            if not unblocked or not self.blocked(x, y):
+                return x, y
 
     def sorted_vis_ents(self, world, cx, cy):
         ents = []
@@ -101,7 +97,7 @@ class Map:
             wx, wy = zip(*tiles["windows"])
             self.windows[list(wx), list(wy)] = True
             self.block[list(wx), list(wy)] = True
-            self.walls[list(dx), list(dy)] = False
+            self.walls[list(wx), list(wy)] = False
         # room centers for debugging
         cx, cy = zip(*tiles["centers"])
         self.centers[list(cx), list(cy)] = True
