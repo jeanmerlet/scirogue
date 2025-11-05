@@ -4,7 +4,7 @@ from .ecs.systems.input import Input
 from .ecs.systems.fov import do_fov
 from .ecs.systems.render import render_all
 from .ecs.systems.ai import take_monster_turns
-from .ecs.systems import movement as sys_move
+from .ecs.systems.movement import try_move
 from .ecs.systems.hud import get_player_stats
 from .ecs.systems.inventory import pick_up, drop, equip_item, unequip_slot, use_consumable
 from .map.derelict import Derelict
@@ -101,63 +101,67 @@ class PlayState():
         self.term.refresh()
 
     def _handle_player_cmd(self, cmd):
-        if not cmd: return False
+        if not cmd: return self
         match cmd[0]:
             case "move":
                 _, dx, dy = cmd
-                return sys_move.try_move(self.world, self.player,
-                                         dx, dy, self.map, self.log)
+                if try_move(self.world, self.player, dx, dy, self.map,
+                            self.log):
+                    self.turn_taken = True
+                return self
             case "wait":
-                return True
+                self.turn_taken = True
+                return self
             case "pick_up":
                 pos = self.world.get(Position, self.player)
                 items_xy = self.map.items[(pos.x, pos.y)]
                 num_items = len(items_xy)
                 if num_items == 0:
-                    return False
+                    return self
                 elif num_items == 1:
                     item = items_xy[0]
-                    return pick_up(self.world, self.map, self.player, item,
-                                   self.log)
+                    if pick_up(self.world, self.map, self.player, item,
+                               self.log):
+                        self.turn_taken = True
+                    return self
                 else:
                     # TODO: pick up menu needed if more than one item
                     item = items_xy[0]
-                    return pick_up(self.world, self.map, self.player, item,
-                                   self.log)
+                    if pick_up(self.world, self.map, self.player, item,
+                               self.log):
+                        self.turn_taken = True
+                    return self
             case "inspect":
-                state = InspectState(self.term, self.world, self.map,
-                                     self.player, self)
-                return ("switch", state)
+                return InspectState(self.term, self.world, self.map,
+                                    self.player, self)
             case "drop":
-                menu = DropMenu(self.term, self.world, self.map, self.player,
+                return DropMenu(self.term, self.world, self.map, self.player,
                                 self.log, self)
-                return ("switch", menu)
             case "inv_menu":
-                menu = InventoryMenu(self.term, self.world, self.player,
-                                     self.log, self)
-                return ("switch", menu)
+                return InventoryMenu(self.term, self.world, self.map,
+                                     self.player, self.log, self)
+            case "equipment_menu":
+                return EquipmentMenu(self.term, self.world, self.map,
+                                     self.player, self.log, self)
             case "equip_menu":
-                menu = EquipmentMenu(self.term, self.world, self.player,
-                                     self.log, self)
-                return ("switch", menu)
+                return EquipMenu(self.term, self.world, self.map,
+                                 self.player, self.log, self)
             case "use_elevator":
                 pos = self.world.get(Position, self.player)
                 elev = self.map.elevators[pos.x, pos.y]
                 if elev < 0:
                     self.log.add("There's no elevator here.")
-                    return False
-                menu = ElevatorMenu(self.term, self.world, self.derelict,
+                    return self
+                return ElevatorMenu(self.term, self.world, self.derelict,
                                     self.player, elev, self.log, self)
-                return ("switch", menu)
             case "game_menu":
                 # nothing for now
-                return False
+                return self
             case "show_all":
                 self.show_all = True if self.show_all == False else False
-                return False
+                return self
             case "quit":
-                return ("switch", None)
-        return self
+                return None
 
     def change_level(self, new_z, x, y):
         pos = self.world.get(Position, self.player)
@@ -170,13 +174,12 @@ class PlayState():
 
     def tick(self):
         self._render()
+        self.turn_taken = False
         cmd = self.input.poll(self.term)
-        outcome = self._handle_player_cmd(cmd)
-        if isinstance(outcome, tuple) and outcome[0] == "switch":
-            return outcome[1]
-        if outcome or self.turn_taken:
+        state = self._handle_player_cmd(cmd)
+        if self.turn_taken:
             take_monster_turns(self.world, self.map, self.player, self.log)
-        return self
+        return state
 
 class MenuState():
     def __init__(self, term):

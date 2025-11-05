@@ -50,12 +50,14 @@ def drop(world, game_map, actor_eid, item_eid, log):
     log.add(f"You drop the {name}.")
     return True
 
-def _occupy_two_hands(equip, item_eid, name, log):
+def _occupy_two_hands(inv, equip, item_eid, name, log):
+    inv.items.remove(item_eid)
     equip.slots["hand1"] = item_eid
     equip.slots["hand2"] = item_eid
     log.add(f"You equip the {name} in both hands.")
 
 def equip_item(world, actor_eid, item_eid, log):
+    inv = world.get(Inventory, actor_eid)
     equip = world.get(Equipment, actor_eid)
     if not equip:
         log.add("You cannot equip items.")
@@ -67,36 +69,38 @@ def equip_item(world, actor_eid, item_eid, log):
         return False
     slot = eq.slot
     if slot not in equip.slots.keys():
-        log.add(f"Nowhere to equip {name}.")
+        # TODO: a vs. no article for plural slot (e.g., feet)
+        log.add(f"You're don't have a {slot}.")
         return False
-    else:
-        if eq.two_handed:
-            if (equip.slots["hand1"] is None and equip.slots["hand2"] is None):
-                _occupy_two_hands(equip, item_eid, name, log)
-                return True
-            elif (equip.slots["hand1"] is not None and
-                  unequip_slot(world, actor_eid, "hand1")):
-                _occupy_two_hands(equip, item_eid, name, log)
-                return True
-            elif (equip.slots["hand2"] is not None and
-                  unequip_slot(world, actor_eid, "hand2")):
-                _occupy_two_hands(equip, item_eid, name, log)
-                return True
-            else:
-                log.add("Need both hands free.")
-                return False
+    if eq.two_handed:
+        if (equip.slots["hand1"] is None and equip.slots["hand2"] is None):
+            _occupy_two_hands(inv, equip, item_eid, name, log)
+            return True
+        elif (equip.slots["hand1"] is not None and
+              unequip_slot(world, actor_eid, "hand1")):
+            _occupy_two_hands(inv, equip, item_eid, name, log)
+            return True
+        elif (equip.slots["hand2"] is not None and
+              unequip_slot(world, actor_eid, "hand2")):
+            _occupy_two_hands(inv, equip, item_eid, name, log)
+            return True
         else:
-            if equip.slots[slot] is None:
+            log.add("Need both hands free.")
+            return False
+    else:
+        if equip.slots[slot] is None:
+            inv.items.remove(item_eid)
+            equip.slots[slot] = item_eid
+            log.add(f"You equip the {name}.")
+            return True
+        else:
+            #TODO: two turns taken for unequip + equip
+            if unequip_slot(world, actor_eid, slot):
+                inv.items.remove(item_eid)
                 equip.slots[slot] = item_eid
-                log.add("You equip the {name}.")
-                return True
-            elif (equip.slots[slot] is not None and
-                  unequip_slot(world, actor_eid, slot)):
-                equip.slots[slot] = item_eid
-                log.add("You equip the {name}.")
+                log.add(f"You equip the {name}.")
                 return True
             else:
-                log.add("There's already something there.")
                 return False
 
 def _free_two_hands(equip):
@@ -115,6 +119,7 @@ def unequip_slot(world, actor_eid, slot):
     eq = world.get(Equippable, eid)
     inv = world.get(Inventory, actor_eid)
     if len(inv.items) >= inv.capacity:
+        #TODO: drop on ground instead with log about it
         log.add("Drop something first.")
         return False
     if eq and eq.two_handed and slot in ["hand1", "hand2"]:

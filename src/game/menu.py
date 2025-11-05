@@ -1,8 +1,10 @@
 from .ecs.systems.input import Input
-from .ecs.systems.inventory import drop
+from .ecs.systems.render import render_all
+from .ecs.systems.inventory import drop, equip_item
 from .ecs.components import *
 from .ui.render_menu import *
 from .ui.description import render_desc
+from .ui.widgets import clear_area
 
 class DescMenu():
     def __init__(self, term, world, ent_eid, prev_state):
@@ -20,42 +22,60 @@ class DescMenu():
         return self
 
 class Menu():
-    def __init__(self, term, world, player_eid, log, prev_state):
+    def __init__(self, term, world, game_map, player_eid, log, prev_state):
         self.term = term
         self.world = world
+        self.map = game_map
         self.player = player_eid
         self.log = log
         self.prev_state = prev_state
         self.prev_state.turn_taken = False
+        self.sel_idx = 0
+
+    def _render(self):
+        clear_area(self.term, 0, 0, self.map.w + 1, self.map.h + 1)
+        render_all(self.term, self.world, self.map)
+        self.term.refresh()
 
     def tick(self):
         raise NotImplementedError
 
 class EquipmentMenu(Menu):
-    def __init__(self, term, world, player_eid, log, prev_state):
-        super().__init__(term, world, player_eid, log, prev_state)
+    def __init__(self, term, world, game_map, player_eid, log, prev_state):
+        super().__init__(term, world, game_map, player_eid, log, prev_state)
         self.input = Input("equip", ["menu", "cancel"])
-        self.sel_idx = 0
+        self.title = 'Equipment'
 
     def _lines(self):
         equip = self.world.get(Equipment, self.player)
         out = []
+        longest_line = 0
         for i, (slot, eid) in enumerate(equip.slots.items()):
+            line_len = 0
             if eid is None:
                 item_text = "(empty)"
+                line_len += len(item_text)
             else:
                 name = self.world.get(Name, eid).text
                 color = self.world.get(Renderable, eid).color
-                item_text = "[color={color}]{name}s[/color]"
+                item_text = f"[color={color}]{name}[/color]"
+                line_len += len(name)
             line = f"{slot.capitalize()}: {item_text}"
             idx = chr(i + 97)
             line = idx + ") " + line
             out.append(line)
-        return out
+            line_len += len(slot) + 2
+            if line_len > longest_line: longest_line = line_len
+        return out, longest_line
+
+    def _render(self, lines, w):
+        super()._render()
+        render_inv_menu(self.term, self.title, lines, w, self.sel_idx)
 
     def tick(self):
-        lines = self._lines()
-        render_equip_menu(self.term, lines, self.sel_idx)
+        lines, w = self._lines()
+        w = max(w, len(self.title))
+        self._render(lines, w)
         cmd = self.input.poll(self.term)
         if not cmd: return self
         if cmd[0] == "quit": return self.prev_state
@@ -76,30 +96,41 @@ class EquipmentMenu(Menu):
         return self
 
 class InventoryMenu(Menu):
-    def __init__(self, term, world, player_eid, log, prev_state):
-        super().__init__(term, world, player_eid, log, prev_state)
+    def __init__(self, term, world, game_map, player_eid, log, prev_state):
+        super().__init__(term, world, game_map, player_eid, log, prev_state)
         self.input = Input("inv", ["menu", "cancel", "letters"])
-        self.sel_idx = 0
+        self.title = 'Inventory'
 
-    def _lines(self, log):
+    def _lines(self):
         inv = self.world.get(Inventory, self.player)
         out = []
+        longest_line = 0
         for i, eid in enumerate(inv.items):
+            line_len = 0
             name = self.world.get(Name, eid).text
             item = self.world.get(Item, eid)
             color = self.world.get(Renderable, eid).color
             idx = chr(i + 97)
             if item.stackable and item.count > 1:
                 line = f"{item.count} [color={color}]{name}s[/color]."
+                line_len += len(str(item.count)) + len(name) + 3
             else:
                 line = f"A [color={color}]{name}[/color]."
+                line_len += len(name) + 3
             line = idx + ") " + line
             out.append(line)
-        return out
+            line_len += 5
+            if line_len > longest_line: longest_line = line_len
+        return out, longest_line
+
+    def _render(self, lines, w):
+        super()._render()
+        render_inv_menu(self.term, self.title, lines, w, self.sel_idx)
 
     def tick(self):
-        lines = self._lines(self.log)
-        render_inv_menu(self.term, lines, self.sel_idx)
+        lines, w = self._lines()
+        w = max(w, len(self.title))
+        self._render(lines, w)
         cmd = self.input.poll(self.term)
         if not cmd: return self
         if len(cmd[0]) == 1 and 97 <= ord(cmd[0]) <= 122:
@@ -124,8 +155,8 @@ class DropMenu(InventoryMenu):
         self.map = game_map
 
     def tick(self):
-        lines = self._lines(self.log)
-        render_inv_menu(self.term, lines, self.sel_idx)
+        lines, w = self._lines()
+        render_inv_menu(self.term, self.title, lines, w, self.sel_idx)
         cmd = self.input.poll(self.term)
         if not cmd: return self
         if len(cmd[0]) == 1 and 97 <= ord(cmd[0]) <= 122:
@@ -133,14 +164,43 @@ class DropMenu(InventoryMenu):
             num_items = len(self.world.get(Inventory, self.player).items)
             if sel_idx < num_items:
                 item = self.world.get(Inventory, self.player).items[sel_idx]
-                drop(self.world, self.map, self.player, item, self.log)
-                self.prev_state.turn_taken = True
-                return self.prev_state
+                if drop(self.world, self.map, self.player, item, self.log):
+                    self.prev_state.turn_taken = True
+                    return self.prev_state
         elif cmd[0] == "select":
             item = self.world.get(Inventory, self.player).items[self.sel_idx]
-            drop(self.world, self.map, self.player, item, self.log)
-            self.prev_state.turn_taken = True
-            return self.prev_state
+            if drop(self.world, self.map, self.player, item, self.log):
+                self.prev_state.turn_taken = True
+                return self.prev_state
+        elif cmd[0] == "up":
+            self.sel_idx = max(0, self.sel_idx - 1)
+        elif cmd[0] == "down":
+            self.sel_idx = min(len(lines) - 1, self.sel_idx + 1)
+        elif cmd[0] == "quit": return self.prev_state
+        return self
+
+class EquipMenu(InventoryMenu):
+    def __init__(self, term, world, player_eid, log, prev_state):
+        super().__init__(term, world, player_eid, log, prev_state)
+
+    def tick(self):
+        lines, w = self._lines()
+        render_inv_menu(self.term, self.title, lines, w, self.sel_idx)
+        cmd = self.input.poll(self.term)
+        if not cmd: return self
+        if len(cmd[0]) == 1 and 97 <= ord(cmd[0]) <= 122:
+            sel_idx = ord(cmd[0]) - 97
+            num_items = len(self.world.get(Inventory, self.player).items)
+            if sel_idx < num_items:
+                item = self.world.get(Inventory, self.player).items[sel_idx]
+                if equip_item(self.world, self.player, item, self.log):
+                    self.prev_state.turn_taken = True
+                    return self.prev_state
+        elif cmd[0] == "select":
+            item = self.world.get(Inventory, self.player).items[self.sel_idx]
+            if equip_item(self.world, self.player, item, self.log):
+                self.prev_state.turn_taken = True
+                return self.prev_state
         elif cmd[0] == "up":
             self.sel_idx = max(0, self.sel_idx - 1)
         elif cmd[0] == "down":
@@ -176,7 +236,7 @@ class ElevatorMenu(Menu):
         render_elevator_menu(self.term, lines, self.sel_idx)
         cmd = self.input.poll(self.term)
         if not cmd: return self
-        if 48 <= ord(cmd[0]) <= 57:
+        if len(cmd[0]) == 1 and 48 <= ord(cmd[0]) <= 57:
             tgt_level = ord(cmd[0]) - 48
             if tgt_level in self.sorted_levels:
                 if tgt_level == self.p_lvl: return self.prev_state

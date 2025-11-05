@@ -35,7 +35,9 @@ class Input:
                 blt.TK_I:         ("inv_menu",),
                 blt.TK_Q:         ("quit",),
                 blt.TK_X:         ("inspect",),
-                blt.TK_E:         ("equip_menu",),
+                blt.TK_E:         ("equipment_menu",),
+                blt.TK_P:         ("equip_menu",),
+                blt.TK_R:         ("unequip_menu",),
                 blt.TK_GRAVE:     ("show_all",),
                 blt.TK_ESCAPE:    ("game_menu",),
                 ord(">"):         ("use_elevator",)
