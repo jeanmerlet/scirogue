@@ -1,43 +1,51 @@
 from ..components import *
 
-def pick_up(world, actor_eid, item_eid, log):
-    # TODO: handle creating a new stack when Item.max_count is reached
+def pick_up(world, game_map, actor_eid, item_eid, log):
     inv = world.get(Inventory, actor_eid)
     if not inv: return False
     item = world.get(Item, item_eid)
     if not item: return False
     name = world.get(Name, item_eid).text
+    pos = world.get(Position, actor_eid)
+    x, y = pos.x, pos.y
     if item.stackable and len(inv.items) > 0:
         inv_names = [world.get(Name, eid).text for eid in inv.items]
         inv_items = [world.get(Item, eid) for eid in inv.items]
         for i, inv_name in enumerate(inv_names):
             if name == inv_name:
-                inv_items[i].count += 1
+                # TODO: new stack when Item.max_count is reached
+                inv_items[i].count += item.count
+                game_map.items[x, y].remove(item_eid)
                 world.destroy(item_eid)
                 log.add(f"You pick up the {name}.")
                 return True
     if len(inv.items) >= inv.capacity:
         log.add("You can't carry any more.")
         return False
+    game_map.items[x, y].remove(item_eid)
     world.remove(item_eid, Position)
     inv.items.append(item_eid)
     log.add(f"You pick up the {name}.")
     return True
 
-def drop(world, actor_eid, item_eid, x, y, log):
-    # TODO: handle dropping n of a stack
-    # TODO: handle stacking item on the ground
+def drop(world, game_map, actor_eid, item_eid, log):
     inv = world.get(Inventory, actor_eid)
     if not inv: return False
     item = world.get(Item, item_eid)
     if not item: return False
-    if item.count > 1 and item.stackable:
+    pos = world.get(Position, actor_eid)
+    x, y, z = pos.x, pos.y, pos.z
+    if item.stackable and item.count > 1:
+        # TODO: handle dropping n of a stack
+        # TODO: handle stacking item on the ground
         item.count -= 1
         item_drop = world.duplicate(item_eid)
-        world.add(item_drop, Position(x, y))
+        world.add(item_drop, Position(x, y, z))
+        game_map.items[x, y].insert(0, item_drop)
     else:
         inv.items.remove(item_eid)
-        world.add(item_eid, Position(x, y))
+        world.add(item_eid, Position(x, y, z))
+        game_map.items[x, y].insert(0, item_eid)
     name = world.get(Name, item_eid).text
     log.add(f"You drop the {name}.")
     return True

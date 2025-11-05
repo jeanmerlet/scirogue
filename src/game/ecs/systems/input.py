@@ -56,6 +56,20 @@ class Input:
                 blt.TK_ESCAPE:    ("quit",)
             }
         }
+        self.cmd_domains["letters"] = {}
+        for i in range(blt.TK_A, blt.TK_Z + 1):
+            self.cmd_domains["letters"][i] = (chr(i + 93),)
+        self.cmd_domains["numbers"] = {}
+        for i in range(blt.TK_1, blt.TK_0 + 1):
+            if i != blt.TK_0:
+                self.cmd_domains["numbers"][i] = (chr(i + 19),)
+            else:
+                self.cmd_domains["numbers"][i] = (chr(i + 9),)
+        for i in range(blt.TK_KP_1, blt.TK_KP_0 + 1):
+            if i != blt.TK_KP_0:
+                self.cmd_domains["numbers"][i] = (chr(i - 40),)
+            else:
+                self.cmd_domains["numbers"][i] = (chr(i - 50),)
         self.cmds = {}
         for domain in domains:
             for k, v in self.cmd_domains[domain].items():
@@ -65,12 +79,4 @@ class Input:
         key = term.read()
         if blt.check(blt.TK_SHIFT):
             return self.cmds.get(blt.state(blt.TK_CHAR))
-        if self.state in ["inv", "equip"] and blt.TK_A <= key <= blt.TK_Z:
-            return (chr(key + 93),)
-        if self.state == "elevator" and blt.TK_1 <= key <= blt.TK_0:
-            out = (chr(key + 19),) if key < blt.TK_0 else (chr(key + 9),)
-            return out
-        if self.state == "elevator" and blt.TK_KP_1 <= key <= blt.TK_KP_0:
-            out = (chr(key - 40),) if key < blt.TK_KP_0 else (chr(key - 50),)
-            return out
         return self.cmds.get(key)

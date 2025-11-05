@@ -14,7 +14,7 @@ from .ui.panels import SidebarPanel, LogPanel
 from .ui.widgets import clear_area
 from .ui.description import draw_inspect
 from .services.log import MessageLog
-from .menu import InventoryMenu, DescMenu, ElevatorMenu, EquipmentMenu
+from .menu import *
 import numpy as np
 import random
 
@@ -110,22 +110,28 @@ class PlayState():
             case "wait":
                 return True
             case "pick_up":
-                # TODO: pick up menu needed if more than one item
                 pos = self.world.get(Position, self.player)
                 items_xy = self.map.items[(pos.x, pos.y)]
                 num_items = len(items_xy)
                 if num_items == 0:
                     return False
-                else:
+                elif num_items == 1:
                     item = items_xy[0]
-                    return pick_up(self.world, self.player, item, self.log)
-            case "drop":
-                # drop menu needed
-                return False
+                    return pick_up(self.world, self.map, self.player, item,
+                                   self.log)
+                else:
+                    # TODO: pick up menu needed if more than one item
+                    item = items_xy[0]
+                    return pick_up(self.world, self.map, self.player, item,
+                                   self.log)
             case "inspect":
                 state = InspectState(self.term, self.world, self.map,
                                      self.player, self)
                 return ("switch", state)
+            case "drop":
+                menu = DropMenu(self.term, self.world, self.map, self.player,
+                                self.log, self)
+                return ("switch", menu)
             case "inv_menu":
                 menu = InventoryMenu(self.term, self.world, self.player,
                                      self.log, self)
