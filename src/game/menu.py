@@ -2,7 +2,7 @@ from .ecs.systems.input import Input
 from .ecs.systems.render import render_all
 from .ecs.systems.inventory import drop, equip_item, unequip_slot
 from .ecs.components import *
-from .ui.render_menu import *
+from .ui.render_menu import draw_menu
 from .ui.description import render_desc
 from .ui.widgets import clear_area
 
@@ -39,7 +39,7 @@ class Menu():
     def _render(self, lines, w):
         clear_area(self.term, 0, 0, self.map.w + 1, self.map.h + 1)
         render_all(self.term, self.world, self.map)
-        render_menu(self.term, self.title, lines, w, self.sel_idx)
+        draw_menu(self.term, self.title, lines, w, self.sel_idx)
 
     def tick(self):
         cmd = self.input.poll(self.term)
@@ -111,6 +111,28 @@ class EquipmentMenu(Menu):
             state = self._parse_sel_cmd(cmd)
         if state: return state
         return self
+
+class UnequipMenu(EquipmentMenu):
+    def __init__(self, term, world, game_map, player_eid, log, prev_state):
+        super().__init__(term, world, game_map, player_eid, log, prev_state)
+
+    def _parse_sel_cmd(self, cmd):
+        slots = list(self.world.get(Equipment, self.player).slots.keys())
+        num_slots = len(slots)
+        if len(cmd[0]) == 1 and 97 <= ord(cmd[0]) <= 122:
+            sel_idx = ord(cmd[0]) - 97
+            if sel_idx < num_slots:
+                slot = slots[sel_idx]
+                if unequip_slot(self.world, self.player, slot, self.log):
+                    self.prev_state.turn_taken = True
+                return self.prev_state
+        elif cmd[0] == "select":
+            if self.sel_idx < num_slots:
+                slot = slots[self.sel_idx]
+                if unequip_slot(self.world, self.player, slot, self.log):
+                    self.prev_state.turn_taken = True
+                return self.prev_state
+        return None
 
 class InventoryMenu(Menu):
     def __init__(self, term, world, game_map, player_eid, log, prev_state):
@@ -192,28 +214,6 @@ class DropMenu(InventoryMenu):
                     return self.prev_state
         return None
 
-class UnequipMenu(EquipmentMenu):
-    def __init__(self, term, world, game_map, player_eid, log, prev_state):
-        super().__init__(term, world, game_map, player_eid, log, prev_state)
-
-    def _parse_sel_cmd(self, cmd):
-        slots = list(self.world.get(Equipment, self.player).slots.keys())
-        num_slots = len(slots)
-        if len(cmd[0]) == 1 and 97 <= ord(cmd[0]) <= 122:
-            sel_idx = ord(cmd[0]) - 97
-            if sel_idx < num_slots:
-                slot = slots[sel_idx]
-                if unequip_slot(self.world, self.player, slot, self.log):
-                    self.prev_state.turn_taken = True
-                return self.prev_state
-        elif cmd[0] == "select":
-            if self.sel_idx < num_slots:
-                slot = slots[self.sel_idx]
-                if unequip_slot(self.world, self.player, slot, self.log):
-                    self.prev_state.turn_taken = True
-                return self.prev_state
-        return None
-
 class EquipMenu(InventoryMenu):
     def __init__(self, term, world, game_map, player_eid, log, prev_state):
         super().__init__(term, world, game_map, player_eid, log, prev_state)
@@ -262,33 +262,33 @@ class EquipMenu(InventoryMenu):
         return None
 
 class ElevatorMenu(Menu):
-    def __init__(self, term, world, derelict, player_eid, elev_eid, log,
-                 prev_state):
-        super().__init__(term, world, player_eid, log, prev_state)
+    def __init__(self, term, world, game_map, derelict, player_eid, elev_eid,
+                 log, prev_state):
+        super().__init__(term, world, game_map, player_eid, log, prev_state)
         self.input = Input("elevator", ["menu", "cancel", "numbers"])
-        self.sel_idx = 0
+        self.title = "Elevator"
         sid = world.get(ElevatorLanding, elev_eid).shaft_id
         self.shaft = derelict.shafts[sid]
         self.eid = elev_eid
         self.p_lvl = self.world.get(Position, self.player).z
 
-    def _lines(self, log):
+    def _lines(self):
         elev = self.world.get(ElevatorLanding, self.eid)
         self.sorted_levels = sorted(elev.access)
         locked = elev.locked
         out = []
+        longest_line = 0
         for level in self.sorted_levels:
+            line_len = 0
             tag = "[[LOCKED]]" if level in locked else ""
             if level == self.p_lvl: tag += " (here)"
-            out.append(f"[[{level}]] {tag}".strip())
-        return out
+            line = f"[[{level}]] {tag}".strip()
+            out.append(line)
+            line_len += len(line) + 5
+            if line_len > longest_line: longest_line = line_len
+        return out, longest_line
 
-    def tick(self):
-        lines = self._lines(self.log)
-        if not lines: return self.prev_state
-        render_elevator_menu(self.term, lines, self.sel_idx)
-        cmd = self.input.poll(self.term)
-        if not cmd: return self
+    def _parse_sel_cmd(self, cmd):
         if len(cmd[0]) == 1 and 48 <= ord(cmd[0]) <= 57:
             tgt_level = ord(cmd[0]) - 48
             if tgt_level in self.sorted_levels:
@@ -301,10 +301,20 @@ class ElevatorMenu(Menu):
             tgt_x, tgt_y = self.shaft.landings[tgt_level]
             self.prev_state.change_level(tgt_level, tgt_x, tgt_y)
             return self.prev_state
-        elif cmd[0] == "up":
-            self.sel_idx = max(0, self.sel_idx - 1)
-        elif cmd[0] == "down":
-            self.sel_idx = min(len(lines) - 1, self.sel_idx + 1)
-        elif cmd[0] == "quit":
-            return self.prev_state
+        return None
+
+    def tick(self):
+        lines, w = self._lines()
+        self.num_lines = len(lines)
+        w = max(w, len(self.title) + 3)
+        super()._render(lines, w)
+        state, cmd = super().tick()
+        if state: return state
+        if ((len(cmd[0]) == 1 and 48 <= ord(cmd[0]) <= 57) or
+            cmd[0] == "select"):
+            state = self._parse_sel_cmd(cmd)
+            if state:
+                return state
+            else:
+                return None
         return self

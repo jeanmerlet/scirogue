@@ -155,8 +155,9 @@ class PlayState():
                 if elev < 0:
                     self.log.add("There's no elevator here.")
                     return self
-                return ElevatorMenu(self.term, self.world, self.derelict,
-                                    self.player, elev, self.log, self)
+                return ElevatorMenu(self.term, self.world, self.map,
+                                    self.derelict, self.player, elev,
+                                    self.log, self)
             case "game_menu":
                 # nothing for now
                 return self
