@@ -146,6 +146,9 @@ class PlayState():
             case "equip_menu":
                 return EquipMenu(self.term, self.world, self.map,
                                  self.player, self.log, self)
+            case "unequip_menu":
+                return UnequipMenu(self.term, self.world, self.map,
+                                   self.player, self.log, self)
             case "use_elevator":
                 pos = self.world.get(Position, self.player)
                 elev = self.map.elevators[pos.x, pos.y]

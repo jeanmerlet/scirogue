@@ -79,6 +79,14 @@ class Equipment:
         "legs": None,
         "feet": None
     })
+    idx_map: dict = field(default_factory=lambda: {
+        0: "hand1",
+        1: "hand2",
+        2: "head",
+        3: "body",
+        4: "legs",
+        5: "feet"
+    })
 
 @dataclass
 class Item:

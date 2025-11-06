@@ -107,16 +107,16 @@ def _free_two_hands(equip):
     equip.slots["hand1"] = None
     equip.slots["hand2"] = None
 
-def unequip_slot(world, actor_eid, slot):
+def unequip_slot(world, actor_eid, slot, log):
     equip = world.get(Equipment, actor_eid)
     if not equip:
         log.add("You cannot equip items.")
         return False
-    eid = equip.slots.get(slot)
-    if eid is None:
+    item_eid = equip.slots.get(slot)
+    if item_eid is None:
         log.add("That slot is already empty.")
         return False
-    eq = world.get(Equippable, eid)
+    eq = world.get(Equippable, item_eid)
     inv = world.get(Inventory, actor_eid)
     if len(inv.items) >= inv.capacity:
         #TODO: drop on ground instead with log about it
@@ -126,7 +126,9 @@ def unequip_slot(world, actor_eid, slot):
         _free_two_hands(equip)
     else:
         equip.slots[slot] = None
-    inv.items.append(eid)
+    name = world.get(Name, item_eid).text
+    log.add(f"You unequip the {name}.")
+    inv.items.append(item_eid)
     return True
 
 def _consume(world, actor_eid, item_eid):

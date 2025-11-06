@@ -1,11 +1,11 @@
 from .widgets import clear_area, term_print, put, draw_box
 from .layout import Rect
 
-def render_inv_menu(term, title, lines, w, selected_idx):
+def render_menu(term, title, lines, w, selected_idx):
     w = w // 2 + 3
-    h = len(lines) + 4
+    h = len(lines) + 5
     x = ((term.w - w) // 2)
-    y = ((term.h - h) // 2)
+    y = ((term.h - h) // 3)
     inv_area = Rect(x, y, w, h)
     clear_area(term, x, y, w, h)
     draw_box(term, inv_area)
