@@ -70,7 +70,7 @@ def equip_item(world, actor_eid, item_eid, log):
     slot = eq.slot
     if slot not in equip.slots.keys():
         # TODO: a vs. no article for plural slot (e.g., feet)
-        log.add(f"You're don't have a {slot}.")
+        log.add(f"You don't have a {slot}.")
         return False
     if eq.two_handed:
         if (equip.slots["hand1"] is None and equip.slots["hand2"] is None):

@@ -1,5 +1,15 @@
 from ..components import *
 
+def _calc_attack(world, actor_eid, base_atk):
+    eq = world.get(Equipment, actor_eid)
+    total = base_atk
+    if not eq: return total
+    for slot, eid in eq.slots.items():
+        if eid is None: continue
+        e = world.get(Equippable, eid)
+        if e: total += e.attack_bonus
+    return total
+
 def die(world, game_map, target, log=None):
     renderable = world.get(Renderable, target)
     renderable.ch = "%"
@@ -14,7 +24,7 @@ def die(world, game_map, target, log=None):
         if dn == "player":
             log.add(f"You die!")
         else:
-            log.add(f"{dn} dies.")
+            log.add(f"{dn.capitalize()} dies!")
 
 def melee(world, game_map, attacker, target, log=None):
     af = world.get(Faction, attacker).tag
@@ -24,19 +34,20 @@ def melee(world, game_map, attacker, target, log=None):
     if not atk: return False
     dhp = world.get(HP, target)
     if not dhp: return False
-
-    dmg = atk.damage
+    dmg = _calc_attack(world, attacker, atk.damage)
     dhp.current = max(0, dhp.current - dmg)
-
     if log:
         an = world.get(Name, attacker).text
         dn = world.get(Name, target).text
-        if not an: an = "Something"
-        if not dn: an = "Something"
-        log.add(f"{an} hits {dn} for {dmg}.")
-    
+        if not an: an = "something"
+        if not dn: an = "something"
+        if dn == "player":
+            log.add(f"{an.capitalize()} hits you for {dmg}.")
+        elif an == "player":
+            log.add(f"You hit {dn} for {dmg}.")
+        else:
+            log.add(f"{an.capitalize()} hits {dn} for {dmg}.")
     if dhp.current <= 0:
         die(world, game_map, target, log)
-
     return True
 
