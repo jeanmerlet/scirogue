@@ -1,15 +1,9 @@
 from ..components import *
-from .combat_calculations import attack_weapon, roll_to_hit
-
-def _calc_attack(world, actor_eid, base_atk):
-    eq = world.get(Equipment, actor_eid)
-    total = base_atk
-    if not eq: return total
-    for slot, eid in eq.slots.items():
-        if eid is None: continue
-        e = world.get(Equippable, eid)
-        if e: total += e.attack_bonus
-    return total
+from .combat_calculations import (
+    attack_weapon,
+    calculate_damage,
+    roll_to_hit,
+)
 
 def die(world, game_map, target, log=None):
     renderable = world.get(Renderable, target)
@@ -32,7 +26,6 @@ def melee(world, game_map, attacker, target, log=None):
     df = world.get(Faction, target).tag
     if af == df: return False
     atk = world.get(Attack, attacker)
-    if not atk: return False
     dhp = world.get(HP, target)
     if not dhp: return False
 
@@ -52,9 +45,18 @@ def melee(world, game_map, attacker, target, log=None):
                 log.add(f"{an.capitalize()} misses {dn}.")
         return True
 
-    # Damage remains on the legacy fixed-damage path until the
-    # mitigation/resistance system is implemented.
-    dmg = _calc_attack(world, attacker, atk.damage)
+    if weapon is None and atk is None:
+        return False
+    fallback_damage = atk.damage if atk is not None else 0
+    dmg = calculate_damage(
+        world,
+        attacker,
+        target,
+        "melee",
+        game_map.rng,
+        weapon=weapon,
+        fallback_damage=fallback_damage
+    )
     dhp.current = max(0, dhp.current - dmg)
     if log:
         if dn == "player":
