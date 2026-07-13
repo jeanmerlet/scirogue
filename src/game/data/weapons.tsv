@@ -35,7 +35,7 @@ thermal blade	1	1	thermal	melee	5	13	7	91	0	0	0	0	false	red
 plasma torch	1	1	thermal, EM	melee	1	9	10	90	0	2	0	2	true	purple
 plasma blade	2	1	thermal, EM	melee	4	12	11	132	0	1	0	1	false	purple
 thermal maul	2	2	thermal	melee	0	9	16	144	0	2	0	3	false	red
-plasma blade	3	1	thermal, EM	melee	3	11	15	165	0	3	0	2	false	purple
+plasma maul	3	1	thermal, EM	melee	3	11	15	165	0	3	0	2	false	purple
 thermal glaive	3	2	thermal	melee	2	10	18	180	0	2	0	2	false	red
 fusion blade	4	1	thermal	melee	2	12	18	216	0	4	0	3	true	red
 sun hammer	4	2	thermal, kinetic	melee	-3	7	30	210	0	4	0	5	true	dark red
