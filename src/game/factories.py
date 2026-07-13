@@ -34,7 +34,7 @@ def spawn_actor(world, key, x, y, z):
     world.add(eid, CombatStats(
         melee=data["melee"],
         ranged=data["ranged"],
-        mobility=data["mobility"],
+        dodge=data["dodge"],
         mitigation=data["mitigation"],
         armor_value=data["armor_value"],
         kinetic_resistance=data["kinetic_resistance"],
