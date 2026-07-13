@@ -56,6 +56,21 @@ class Map:
             if not unblocked or not self.blocked(x, y):
                 return x, y
 
+    def tile_description(self, x, y):
+        if not self.in_bounds(x, y):
+            return "Void", "The void."
+        if self.doors_open[x, y]:
+            return "Door", "A door. It's open."
+        if self.doors_closed[x, y]:
+            return "Door", "A door. It's closed."
+        if self.windows[x, y]:
+            return "Viewport", "A viewport."
+        if self.walls[x, y]:
+            return "Wall", "A wall."
+        if self.floor[x, y]:
+            return "Floor", "A floor."
+        return "Void", "The void."
+
     def inspectable_ents_at(self, world, x, y):
         if not self.in_bounds(x, y):
             return []
