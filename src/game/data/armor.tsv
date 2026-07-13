@@ -1,49 +1,49 @@
 armor_base	tier	slot	armor_value	kinetic_res	thermal_res	em_res	encumbrance	noise	color
-recon hood	1	head	1	0.02	0.03	0.02	-1	0	dark green
-recon jacket	1	body	2	0.02	0.04	0.03	-2	0	dark green
-recon trousers	1	legs	1	0.02	0.03	0.02	-1	0	dark green
+recon hood	1	head	10	0.02	0.03	0.02	-1	0	dark green
+recon jacket	1	body	20	0.02	0.04	0.03	-2	0	dark green
+recon trousers	1	legs	10	0.02	0.03	0.02	-1	0	dark green
 recon boots	1	feet	0	0.01	0.02	0.02	-1	0	dark green
-patrol helmet	1	head	2	0.03	0.02	0.02	0	0	grey
-patrol vest	1	body	4	0.04	0.03	0.03	1	1	grey
-patrol greaves	1	legs	2	0.03	0.02	0.02	1	1	grey
-patrol boots	1	feet	1	0.02	0.02	0.02	0	1	grey
-industrial helmet	1	head	3	0.05	0.02	0.02	1	1	brown
-industrial plate	1	body	6	0.06	0.02	0.02	3	3	brown
-industrial leggings	1	legs	4	0.05	0.02	0.02	2	2	brown
-industrial boots	1	feet	2	0.03	0.01	0.01	2	2	brown
-infiltrator hood	2	head	2	0.03	0.06	0.05	-1	0	green
-infiltrator suit	2	body	3	0.04	0.08	0.06	-2	0	green
-infiltrator leggings	2	legs	2	0.03	0.06	0.05	-1	0	green
-infiltrator boots	2	feet	1	0.02	0.04	0.03	-1	0	green
-security helmet	2	head	4	0.06	0.05	0.05	0	0	dark grey
-security cuirass	2	body	6	0.08	0.06	0.06	1	1	dark grey
-security greaves	2	legs	4	0.06	0.05	0.05	1	1	dark grey
-security boots	2	feet	3	0.04	0.03	0.03	0	1	dark grey
-breacher helmet	2	head	5	0.09	0.03	0.03	1	1	dark red
-breacher plate	2	body	8	0.12	0.04	0.04	3	3	dark red
-breacher greaves	2	legs	6	0.09	0.03	0.03	2	2	dark red
-breacher boots	2	feet	4	0.06	0.02	0.02	2	2	dark red
-voidrunner hood	3	head	3	0.05	0.09	0.07	-1	0	teal
-voidrunner suit	3	body	4	0.06	0.12	0.09	-2	0	teal
-voidrunner leggings	3	legs	3	0.05	0.09	0.07	-1	0	teal
-voidrunner boots	3	feet	2	0.03	0.06	0.05	-1	0	teal
-tactical helmet	3	head	6	0.09	0.07	0.07	0	0	blue
-tactical armor	3	body	8	0.12	0.09	0.09	1	1	blue
-tactical greaves	3	legs	6	0.09	0.07	0.07	1	1	blue
-tactical boots	3	feet	5	0.06	0.05	0.05	0	1	blue
-powered helmet	3	head	8	0.14	0.05	0.05	1	1	red
-powered plate	3	body	11	0.18	0.06	0.06	3	3	red
-powered greaves	3	legs	9	0.14	0.05	0.05	2	2	red
-powered boots	3	feet	7	0.09	0.03	0.03	2	2	red
-ghostweave hood	4	head	4	0.06	0.12	0.09	-1	0	cyan
-ghostweave suit	4	body	5	0.08	0.16	0.12	-2	0	cyan
-ghostweave leggings	4	legs	4	0.06	0.12	0.09	-1	0	cyan
-ghostweave boots	4	feet	3	0.04	0.08	0.06	-1	0	cyan
-aegis helmet	4	head	8	0.12	0.09	0.09	0	0	dark blue
-aegis armor	4	body	10	0.16	0.12	0.12	1	1	dark blue
-aegis greaves	4	legs	8	0.12	0.09	0.09	1	1	dark blue
-aegis boots	4	feet	7	0.08	0.06	0.06	0	1	dark blue
-juggernaut helmet	4	head	11	0.18	0.06	0.06	1	1	orange
-juggernaut plate	4	body	14	0.24	0.08	0.08	3	3	orange
-juggernaut greaves	4	legs	12	0.18	0.06	0.06	2	2	orange
-juggernaut boots	4	feet	10	0.12	0.04	0.04	2	2	orange
+patrol helmet	1	head	20	0.03	0.02	0.02	0	0	grey
+patrol vest	1	body	40	0.04	0.03	0.03	1	1	grey
+patrol greaves	1	legs	20	0.03	0.02	0.02	1	1	grey
+patrol boots	1	feet	10	0.02	0.02	0.02	0	1	grey
+industrial helmet	1	head	30	0.05	0.02	0.02	1	1	brown
+industrial plate	1	body	60	0.06	0.02	0.02	3	3	brown
+industrial leggings	1	legs	40	0.05	0.02	0.02	2	2	brown
+industrial boots	1	feet	20	0.03	0.01	0.01	2	2	brown
+infiltrator hood	2	head	20	0.03	0.06	0.05	-1	0	green
+infiltrator suit	2	body	30	0.04	0.08	0.06	-2	0	green
+infiltrator leggings	2	legs	20	0.03	0.06	0.05	-1	0	green
+infiltrator boots	2	feet	10	0.02	0.04	0.03	-1	0	green
+security helmet	2	head	40	0.06	0.05	0.05	0	0	dark grey
+security cuirass	2	body	60	0.08	0.06	0.06	1	1	dark grey
+security greaves	2	legs	40	0.06	0.05	0.05	1	1	dark grey
+security boots	2	feet	30	0.04	0.03	0.03	0	1	dark grey
+breacher helmet	2	head	50	0.09	0.03	0.03	1	1	dark red
+breacher plate	2	body	80	0.12	0.04	0.04	3	3	dark red
+breacher greaves	2	legs	60	0.09	0.03	0.03	2	2	dark red
+breacher boots	2	feet	40	0.06	0.02	0.02	2	2	dark red
+voidrunner hood	3	head	30	0.05	0.09	0.07	-1	0	teal
+voidrunner suit	3	body	40	0.06	0.12	0.09	-2	0	teal
+voidrunner leggings	3	legs	30	0.05	0.09	0.07	-1	0	teal
+voidrunner boots	3	feet	20	0.03	0.06	0.05	-1	0	teal
+tactical helmet	3	head	60	0.09	0.07	0.07	0	0	blue
+tactical armor	3	body	80	0.12	0.09	0.09	1	1	blue
+tactical greaves	3	legs	60	0.09	0.07	0.07	1	1	blue
+tactical boots	3	feet	50	0.06	0.05	0.05	0	1	blue
+powered helmet	3	head	80	0.14	0.05	0.05	1	1	red
+powered plate	3	body	110	0.18	0.06	0.06	3	3	red
+powered greaves	3	legs	90	0.14	0.05	0.05	2	2	red
+powered boots	3	feet	70	0.09	0.03	0.03	2	2	red
+ghostweave hood	4	head	40	0.06	0.12	0.09	-1	0	cyan
+ghostweave suit	4	body	50	0.08	0.16	0.12	-2	0	cyan
+ghostweave leggings	4	legs	40	0.06	0.12	0.09	-1	0	cyan
+ghostweave boots	4	feet	30	0.04	0.08	0.06	-1	0	cyan
+aegis helmet	4	head	80	0.12	0.09	0.09	0	0	dark blue
+aegis armor	4	body	100	0.16	0.12	0.12	1	1	dark blue
+aegis greaves	4	legs	80	0.12	0.09	0.09	1	1	dark blue
+aegis boots	4	feet	70	0.08	0.06	0.06	0	1	dark blue
+juggernaut helmet	4	head	110	0.18	0.06	0.06	1	1	orange
+juggernaut plate	4	body	140	0.24	0.08	0.08	3	3	orange
+juggernaut greaves	4	legs	120	0.18	0.06	0.06	2	2	orange
+juggernaut boots	4	feet	100	0.12	0.04	0.04	2	2	orange
