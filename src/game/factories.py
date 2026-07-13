@@ -1,6 +1,23 @@
 from .data.actors import ACTORS
-from .data.items import ITEMS
+from .data.items import ITEMS, WEAPONS
 from .ecs.components import *
+
+def _weapon_from_data(data):
+    return Weapon(
+        name=data["name"],
+        tier=data["tier"],
+        hands=data["hands"],
+        damage_types=data["damage_types"],
+        skill=data["skill"],
+        accuracy=data["accuracy"],
+        attack_speed=data["attack_speed"],
+        attack_damage=data["attack_damage"],
+        area=data["area"],
+        penetration=data["penetration"],
+        recoil=data["recoil"],
+        noise=data["noise"],
+        destructs_tiles=data["destructs_tiles"]
+    )
 
 def spawn_actor(world, key, x, y, z):
     data = ACTORS[key]
@@ -14,6 +31,21 @@ def spawn_actor(world, key, x, y, z):
     world.add(eid, Faction(data["faction"]))
     world.add(eid, AI())
     world.add(eid, HP(data["hp"], data["hp"]))
+    world.add(eid, CombatStats(
+        melee=data["melee"],
+        ranged=data["ranged"],
+        mobility=data["mobility"],
+        mitigation=data["mitigation"],
+        armor_value=data["armor_value"],
+        kinetic_resistance=data["kinetic_resistance"],
+        thermal_resistance=data["thermal_resistance"],
+        em_resistance=data["em_resistance"]
+    ))
+    world.add(eid, Attacks([
+        _weapon_from_data(WEAPONS[attack_name])
+        for attack_name in data["attacks"]
+    ]))
+    # Keep fixed damage working until combat.py uses CombatStats/Attacks.
     world.add(eid, Attack(data["attack"]))
     world.add(eid, Speed(data["speed"]))
     return eid
@@ -32,20 +64,7 @@ def spawn_item(world, key, x, y, z):
             slot="hand1",
             two_handed=data["hands"] == 2
         ))
-        world.add(eid, Weapon(
-            tier=data["tier"],
-            hands=data["hands"],
-            damage_types=data["damage_types"],
-            skill=data["skill"],
-            accuracy=data["accuracy"],
-            attack_speed=data["attack_speed"],
-            attack_damage=data["attack_damage"],
-            area=data["area"],
-            penetration=data["penetration"],
-            recoil=data["recoil"],
-            noise=data["noise"],
-            destructs_tiles=data["destructs_tiles"]
-        ))
+        world.add(eid, _weapon_from_data(data))
     elif data["kind"] == "armor":
         world.add(eid, Equippable(slot=data["slot"]))
         world.add(eid, Armor(
