@@ -26,18 +26,7 @@ def _wrap_desc(desc, w):
             line += " "
     return out
 
-def _get_desc(world, eid, w):
-    ttext = world.get(Name, eid).text.capitalize()
-    tcolor = world.get(Renderable, eid).color
-    title = f"[font=gui][color={tcolor}]{ttext}[/color]"
-    tlen = len(ttext)
-    description = world.get(Description, eid)
-    desc = description.text if description else ""
-    desc = _wrap_desc(desc, w)
-    cmds = ""
-    return title, tlen, desc, cmds
-
-def render_desc(term, world, eid):
+def _render_desc(term, title_text, title_color, description):
     w = int(term.w * 0.33)
     h = int(term.h * 0.33)
     x = ((term.w - w) // 2)
@@ -45,15 +34,28 @@ def render_desc(term, world, eid):
     desc_area = Rect(x, y, w, h)
     clear_area(term, x, y, w, h)
     draw_box(term, desc_area)
-    title, tlen, desc, cmds = _get_desc(world, eid, w - 2)
-    # title
+
+    title_text = title_text.capitalize()
+    title = f"[font=gui][color={title_color}]{title_text}[/color]"
+    desc = _wrap_desc(description, w - 2)
+
     y += 1
     centerx = term.w // 2
-    term_print(term, centerx - (tlen // 2), y, title)
-    # desc
+    term_print(term, centerx - (len(title_text) // 2), y, title)
     y += 1
     for line in desc:
         y += 1
         term_print(term, x + 2, y, f"[font=gui]{line}")
-    # cmds
     term.refresh()
+
+
+def render_desc(term, world, eid):
+    title = world.get(Name, eid).text
+    color = world.get(Renderable, eid).color
+    description = world.get(Description, eid)
+    text = description.text if description else ""
+    _render_desc(term, title, color, text)
+
+
+def render_tile_desc(term, title, description):
+    _render_desc(term, title, "light grey", description)
