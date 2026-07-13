@@ -1,4 +1,5 @@
 from ..components import *
+from .combat_calculations import attack_weapon, roll_to_hit
 
 def _calc_attack(world, actor_eid, base_atk):
     eq = world.get(Equipment, actor_eid)
@@ -34,13 +35,28 @@ def melee(world, game_map, attacker, target, log=None):
     if not atk: return False
     dhp = world.get(HP, target)
     if not dhp: return False
+
+    weapon = attack_weapon(world, attacker, "melee")
+    _, _, _, hit = roll_to_hit(
+        world, attacker, target, "melee", game_map.rng, weapon
+    )
+    an = world.get(Name, attacker).text or "something"
+    dn = world.get(Name, target).text or "something"
+    if not hit:
+        if log:
+            if dn == "player":
+                log.add(f"{an.capitalize()} misses you.")
+            elif an == "player":
+                log.add(f"You miss {dn}.")
+            else:
+                log.add(f"{an.capitalize()} misses {dn}.")
+        return True
+
+    # Damage remains on the legacy fixed-damage path until the
+    # mitigation/resistance system is implemented.
     dmg = _calc_attack(world, attacker, atk.damage)
     dhp.current = max(0, dhp.current - dmg)
     if log:
-        an = world.get(Name, attacker).text
-        dn = world.get(Name, target).text
-        if not an: an = "something"
-        if not dn: an = "something"
         if dn == "player":
             log.add(f"{an.capitalize()} hits you for {dmg}.")
         elif an == "player":
