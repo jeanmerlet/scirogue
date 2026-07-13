@@ -106,6 +106,31 @@ class Equippable:
     defense_bonus: int = 0
     oxy_bonus: int = 0
 
+@dataclass
+class Weapon:
+    tier: int
+    hands: int
+    damage_types: tuple
+    skill: str
+    accuracy: int
+    attack_speed: int
+    attack_damage: int
+    area: str = ""
+    penetration: int = 0
+    recoil: int = 0
+    noise: int = 0
+    destructs_tiles: bool = False
+
+@dataclass
+class Armor:
+    tier: int
+    armor_value: int
+    kinetic_resistance: float = 0.0
+    thermal_resistance: float = 0.0
+    em_resistance: float = 0.0
+    encumbrance: int = 0
+    noise: int = 0
+
 # --- Player --- #
 
 @dataclass
