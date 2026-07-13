@@ -49,6 +49,7 @@ def _load_weapons():
             "recoil": int(row["recoil"]),
             "noise": int(row["noise"]),
             "destructs_tiles": _parse_bool(row["destructs_tiles"]),
+            "natural": _parse_bool(row.get("natural", "false")),
         }
     return weapons
 
@@ -86,5 +87,9 @@ if duplicate_names:
     duplicates = ", ".join(sorted(duplicate_names))
     raise ValueError(f"Duplicate equipment names across catalogs: {duplicates}")
 
-ITEMS = {**WEAPONS, **ARMOR}
+ITEMS = {
+    name: data for name, data in WEAPONS.items()
+    if not data["natural"]
+}
+ITEMS.update(ARMOR)
 ITEM_KEYS = tuple(ITEMS)
