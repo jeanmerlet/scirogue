@@ -57,7 +57,7 @@ class Map:
                 return x, y
 
     def tile_description(self, x, y):
-        if not self.in_bounds(x, y) or not self.explored[x, y]:
+        if not self.in_bounds(x, y) or not self.visible[x, y]:
             return None
         if self.doors_open[x, y]:
             return "Door", "A door. It's open."
