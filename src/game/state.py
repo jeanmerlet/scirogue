@@ -42,6 +42,8 @@ class PlayState():
         self.world.add(player, Actor())
         self.world.add(player, Inventory(capacity=26))
         self.world.add(player, Equipment())
+        self.world.add(player, AbilityScores())
+        self.world.add(player, Skills())
         self.world.add(player, Faction("player"))
         self.world.add(player, HP(100, 100))
         self.world.add(player, Oxygen(100, 100))
