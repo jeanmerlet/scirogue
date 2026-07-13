@@ -57,8 +57,8 @@ class Map:
                 return x, y
 
     def tile_description(self, x, y):
-        if not self.in_bounds(x, y):
-            return "Void", "The void."
+        if not self.in_bounds(x, y) or not self.explored[x, y]:
+            return None
         if self.doors_open[x, y]:
             return "Door", "A door. It's open."
         if self.doors_closed[x, y]:
@@ -72,7 +72,7 @@ class Map:
         return "Void", "The void."
 
     def inspectable_ents_at(self, world, x, y):
-        if not self.in_bounds(x, y):
+        if not self.in_bounds(x, y) or not self.visible[x, y]:
             return []
         ents = []
         for eid, pos, _, renderable in world.view(
