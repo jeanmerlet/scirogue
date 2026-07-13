@@ -249,6 +249,8 @@ class InspectState():
         elif cmd[0] == "select":
             if self.target is not None:
                 return DescMenu(self.term, self.world, self.target, self)
+            title, description = self.map.tile_description(self.x, self.y)
+            return TileDescMenu(self.term, title, description, self)
         elif cmd[0] == "next":
             self.target = self._next_target()
             if self.target is not None:
