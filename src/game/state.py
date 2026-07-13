@@ -9,6 +9,7 @@ from .ecs.systems.hud import get_player_stats
 from .ecs.systems.inventory import pick_up, drop, equip_item, unequip_slot, use_consumable
 from .map.derelict import Derelict
 from .factories import spawn_actor, spawn_item, spawn_elevator
+from .data.items import ITEM_KEYS
 from .ui.layout import make_layout
 from .ui.panels import SidebarPanel, LogPanel
 from .ui.widgets import clear_area
@@ -75,7 +76,8 @@ class PlayState():
             num = min(r.size(), self.rng.randint(0, 2))
             for _ in range(num):
                 x, y = self.rng.choice(list(r.inside()))
-                kind = self.rng.choice(["stimpack", "crowbar", "coil_rifle"])
+                # TODO: replace uniform selection with depth-weighted spawning
+                kind = self.rng.choice(ITEM_KEYS)
                 eid = spawn_item(self.world, kind, x, y, z)
                 self.map.items[(x, y)].append(eid)
             if r.is_inside(pos.x, pos.y): continue
