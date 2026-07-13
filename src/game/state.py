@@ -209,22 +209,27 @@ class InspectState():
         self.vis_ent = self.map.sorted_vis_ents(self.world, pos.x, pos.y)
         self.x, self.y = pos.x, pos.y
         self.target = None
+        self._update_target()
         self.prev_state = prev_state
         self.prev_state.turn_taken = False
 
+    def _update_target(self):
+        ents = self.map.inspectable_ents_at(self.world, self.x, self.y)
+        if self.target not in ents:
+            self.target = ents[0] if ents else None
+
     def _next_target(self):
-        num_ents = len(self.vis_ent)
-        if num_ents == 0: return None
-        if self.target:
-            idx = (self.vis_ent == self.target).argmax()
-        else:
+        if not self.vis_ent:
+            return None
+        if self.target not in self.vis_ent:
             return self.vis_ent[0]
-        next_idx = (idx + 1) % num_ents
-        return self.vis_ent[next_idx]
+        idx = self.vis_ent.index(self.target)
+        return self.vis_ent[(idx + 1) % len(self.vis_ent)]
 
     def _update_xy(self, x, y):
-        self.x = x if 0 <= x <= self.map.w else self.x
-        self.y = y if 0 <= y <= self.map.h else self.y
+        if self.map.in_bounds(x, y):
+            self.x, self.y = x, y
+            self._update_target()
 
     def _render(self):
         clear_area(self.term, 0, 0, self.map.w + 1, self.map.h + 1)
@@ -241,17 +246,12 @@ class InspectState():
         if cmd[0] == "move":
             _, dx, dy = cmd
             self._update_xy(self.x + dx, self.y + dy)
-            #TODO: make it so ticks update to detect any ent, not just actors
-            if self.map.actors[self.x, self.y] > 0:
-                self.target = self.map.actors[self.x, self.y]
-            else:
-                self.target = None
         elif cmd[0] == "select":
-            if self.target:
+            if self.target is not None:
                 return DescMenu(self.term, self.world, self.target, self)
         elif cmd[0] == "next":
             self.target = self._next_target()
-            if self.target:
+            if self.target is not None:
                 pos = self.world.get(Position, self.target)
                 self.x, self.y = pos.x, pos.y
         elif cmd[0] == "quit":
