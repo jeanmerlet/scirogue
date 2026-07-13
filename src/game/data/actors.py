@@ -4,8 +4,8 @@ ACTORS = {
         "ch": "s",
         "color": "purple",
         "name": "skitterling",
-        "hp": 4,
-        "attack": 1,  # legacy fixed damage; remove with old combat system
+        "hp": 40,
+        "attack": 10,  # legacy fixed damage; remove with old combat system
         "speed": 1.5,
         "melee": 2,
         "ranged": 0,
@@ -23,14 +23,14 @@ ACTORS = {
         "ch": "M",
         "color": "purple",
         "name": "skittermaw",
-        "hp": 12,
-        "attack": 4,  # legacy fixed damage; remove with old combat system
+        "hp": 120,
+        "attack": 40,  # legacy fixed damage; remove with old combat system
         "speed": 1.0,
         "melee": 4,
         "ranged": 0,
         "dodge": 1,
         "mitigation": 2,
-        "armor_value": 1,
+        "armor_value": 10,
         "kinetic_resistance": 0.05,
         "thermal_resistance": 0.0,
         "em_resistance": 0.0,
@@ -42,8 +42,8 @@ ACTORS = {
         "ch": "e",
         "color": "purple",
         "name": "skitterseer",
-        "hp": 6,
-        "attack": 2,  # legacy fixed damage; remove with old combat system
+        "hp": 60,
+        "attack": 20,  # legacy fixed damage; remove with old combat system
         "speed": 1.0,
         "melee": 1,
         "ranged": 3,
