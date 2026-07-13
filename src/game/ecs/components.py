@@ -167,7 +167,7 @@ class FOVRadius:
 class CombatStats:
     melee: int = 0
     ranged: int = 0
-    mobility: int = 0
+    dodge: int = 0
     mitigation: int = 0
     armor_value: int = 0
     kinetic_resistance: float = 0.0
