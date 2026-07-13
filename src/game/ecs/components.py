@@ -108,6 +108,7 @@ class Equippable:
 
 @dataclass
 class Weapon:
+    name: str
     tier: int
     hands: int
     damage_types: tuple
@@ -161,6 +162,21 @@ class FOVRadius:
     radius: int
 
 # --- Combat --- #
+
+@dataclass
+class CombatStats:
+    melee: int = 0
+    ranged: int = 0
+    mobility: int = 0
+    mitigation: int = 0
+    armor_value: int = 0
+    kinetic_resistance: float = 0.0
+    thermal_resistance: float = 0.0
+    em_resistance: float = 0.0
+
+@dataclass
+class Attacks:
+    attacks: list = field(default_factory=list)
 
 @dataclass
 class HP:
