@@ -109,6 +109,24 @@ class Equippable:
 # --- Player --- #
 
 @dataclass
+class AbilityScores:
+    awareness: int = 10
+    equilibrium: int = 10
+    reasoning: int = 10
+    vigor: int = 10
+
+@dataclass
+class Skills:
+    melee: int = 0
+    ranged: int = 0
+    mobility: int = 0
+    mitigation: int = 0
+    tech: int = 0
+    stealth: int = 0
+    cybernetics: int = 0
+    perception: int = 0
+
+@dataclass
 class Oxygen:
     current: int
     maximum: int
