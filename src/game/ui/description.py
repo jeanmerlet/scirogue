@@ -31,7 +31,8 @@ def _get_desc(world, eid, w):
     tcolor = world.get(Renderable, eid).color
     title = f"[font=gui][color={tcolor}]{ttext}[/color]"
     tlen = len(ttext)
-    desc = world.get(Description, eid).text
+    description = world.get(Description, eid)
+    desc = description.text if description else ""
     desc = _wrap_desc(desc, w)
     cmds = ""
     return title, tlen, desc, cmds
