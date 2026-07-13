@@ -26,16 +26,40 @@ def spawn_item(world, key, x, y, z):
     world.add(eid, Position(x, y, z))
     world.add(eid, Renderable(data["ch"], data["color"], order=1))
     world.add(eid, Item(data.get("stackable", False)))
-    if data["kind"] == "consumable":
-        world.add(eid, Consumable(data["effect_id"]))
-    if data["kind"] == "equip":
+
+    if data["kind"] == "weapon":
         world.add(eid, Equippable(
-            slot=data["slot"],
-            two_handed=data.get("two_handed", False),
-            attack_bonus=data.get("attack_bonus", 0),
-            defense_bonus=data.get("defense_bonus", 0),
-            oxy_bonus=data.get("oxy_bonus", 0)
+            slot="hand1",
+            two_handed=data["hands"] == 2
         ))
+        world.add(eid, Weapon(
+            tier=data["tier"],
+            hands=data["hands"],
+            damage_types=data["damage_types"],
+            skill=data["skill"],
+            accuracy=data["accuracy"],
+            attack_speed=data["attack_speed"],
+            attack_damage=data["attack_damage"],
+            area=data["area"],
+            penetration=data["penetration"],
+            recoil=data["recoil"],
+            noise=data["noise"],
+            destructs_tiles=data["destructs_tiles"]
+        ))
+    elif data["kind"] == "armor":
+        world.add(eid, Equippable(slot=data["slot"]))
+        world.add(eid, Armor(
+            tier=data["tier"],
+            armor_value=data["armor_value"],
+            kinetic_resistance=data["kinetic_resistance"],
+            thermal_resistance=data["thermal_resistance"],
+            em_resistance=data["em_resistance"],
+            encumbrance=data["encumbrance"],
+            noise=data["noise"]
+        ))
+    elif data["kind"] == "consumable":
+        world.add(eid, Consumable(data["effect_id"]))
+
     return eid
 
 def spawn_elevator(world, derelict, shaft_id, level, x, y, locked_floors=None):
