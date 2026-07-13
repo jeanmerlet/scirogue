@@ -1,4 +1,4 @@
-from ..ecs.components import Position, Description, Name
+from ..ecs.components import Position, Name, Renderable
 from collections import defaultdict
 import numpy as np
 
@@ -56,16 +56,25 @@ class Map:
             if not unblocked or not self.blocked(x, y):
                 return x, y
 
+    def inspectable_ents_at(self, world, x, y):
+        if not self.in_bounds(x, y):
+            return []
+        ents = []
+        for eid, pos, _, renderable in world.view(
+                Position, Name, Renderable):
+            if pos.z == self.z and pos.x == x and pos.y == y:
+                ents.append((renderable.order, eid))
+        return [eid for _, eid in sorted(ents, reverse=True)]
+
     def sorted_vis_ents(self, world, cx, cy):
         ents = []
-        dists = []
-        for eid, pos, _, _ in world.view(Position, Description, Name):
+        for eid, pos, _, renderable in world.view(
+                Position, Name, Renderable):
             if pos.z != self.z: continue
             if not self.visible[pos.x, pos.y]: continue
-            ents.append(eid)
-            dists.append((cx-pos.x)**2 + (cy-pos.y)**2)
-        ents = np.array(ents)[np.argsort(dists)]
-        return ents
+            dist = (cx-pos.x)**2 + (cy-pos.y)**2
+            ents.append((dist, -renderable.order, eid))
+        return [eid for _, _, eid in sorted(ents)]
 
     def open_door(self, x, y):
         self.doors_closed[x, y] = False
