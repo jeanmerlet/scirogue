@@ -241,6 +241,7 @@ class InspectState():
         if cmd[0] == "move":
             _, dx, dy = cmd
             self._update_xy(self.x + dx, self.y + dy)
+            #TODO: make it so ticks update to detect any ent, not just actors
             if self.map.actors[self.x, self.y] > 0:
                 self.target = self.map.actors[self.x, self.y]
             else:
