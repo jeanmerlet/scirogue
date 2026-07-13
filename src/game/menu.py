@@ -3,7 +3,7 @@ from .ecs.systems.render import render_all
 from .ecs.systems.inventory import drop, equip_item, unequip_slot
 from .ecs.components import *
 from .ui.render_menu import draw_menu
-from .ui.description import render_desc
+from .ui.description import render_desc, render_tile_desc
 from .ui.widgets import clear_area
 
 class DescMenu():
@@ -20,6 +20,22 @@ class DescMenu():
         if not cmd: return self
         if cmd[0] == "quit": return self.prev_state
         return self
+
+class TileDescMenu():
+    def __init__(self, term, title, description, prev_state):
+        self.term = term
+        self.input = Input("description", ["cancel"])
+        self.title = title
+        self.description = description
+        self.prev_state = prev_state
+
+    def tick(self):
+        render_tile_desc(self.term, self.title, self.description)
+        cmd = self.input.poll(self.term)
+        if not cmd: return self
+        if cmd[0] == "quit": return self.prev_state
+        return self
+
 
 class Menu():
     def __init__(self, term, world, game_map, player_eid, log, prev_state):
