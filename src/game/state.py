@@ -222,7 +222,14 @@ class InspectState():
         if not self.vis_ent:
             return None
         if self.target not in self.vis_ent:
-            return self.vis_ent[0]
+            return min(
+                self.vis_ent,
+                key=lambda eid: (
+                    self.world.get(Position, eid).x - self.x
+                ) ** 2 + (
+                    self.world.get(Position, eid).y - self.y
+                ) ** 2
+            )
         idx = self.vis_ent.index(self.target)
         return self.vis_ent[(idx + 1) % len(self.vis_ent)]
 
