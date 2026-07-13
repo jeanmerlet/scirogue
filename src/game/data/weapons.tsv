@@ -1,53 +1,53 @@
 weapon_base	tier	hands	dmg_type	skill	accuracy	atk_speed	atk_dmg	spd*dmg	area	penetration	recoil	noise	destructs_tiles	color	natural
-nailgun	1	1	kinetic	ranged	3	12	8	96	0	0	0	1	false	grey	false
-handgun	1	1	kinetic	ranged	2	11	9	99	0	0	1	2	false	grey	false
-scattergun	2	1	kinetic	ranged	-2	8	8	64	spread: 3	0	2	4	false	grey	false
-coilgun	3	1	kinetic	ranged	0	10	12	120	0	1	2	3	true	grey	false
-autorifle	2	2	kinetic	ranged	3	13	10	130	0	0	1	3	false	grey	false
-magrifle	3	2	kinetic	ranged	1	9	14	126	0	2	3	4	true	grey	false
-minigun	3	2	kinetic	ranged	-4	7	11	77	spread: 5	0	5	5	true	grey	false
-railgun	4	2	kinetic	ranged	-2	8	16	128	0	4	4	6	true	grey	false
-laser blaster	1	1	thermal	ranged	5	11	7	77	0	0	0	1	false	red	false
-plasma blaster	2	1	thermal, EM	ranged	1	10	10	100	0	0	1	2	false	purple	false
-scatter laser	2	1	thermal	ranged	1	8	7	56	spread: 2	0	0	1	false	red	false
-particle beamer	3	1	thermal, kinetic	ranged	-1	10	12	120	0	2	2	3	true	dark red	false
-autolaser	2	2	thermal	ranged	4	12	10	120	0	0	0	2	false	red	false
-plasma launcher	3	2	thermal, EM	ranged	-1	8	11	88	splash: 3	0	2	4	false	purple	false
-particle cannon	4	2	thermal, kinetic	ranged	-3	9	15	135	0	3	3	5	true	dark red	false
-fusion cannon	4	2	thermal	ranged	-4	7	18	126	0	2	2	6	true	red	false
-ion blaster	1	1	EM	ranged	3	10	6	60	0	0	1	2	false	blue	false
-arc projector	2	1	EM	ranged	1	7	5	35	chain: 5	0	0	3	false	blue	false
-ion repeater	3	1	EM	ranged	4	11	7	77	0	0	1	2	false	blue	false
-scrambler	3	1	EM	ranged	0	5	14	70	0	0	3	4	false	blue	false
-electro-shotgun	2	2	EM	ranged	-1	7	7	49	spread: 3	0	2	3	false	blue	false
-arc cannon	2	2	EM	ranged	0	5	7	35	chain: 7	0	1	4	false	blue	false
-EMP launcher	3	2	EM	ranged	-1	7	10	70	splash: 4	0	2	3	false	blue	false
-disruptor	4	2	EM, kinetic	ranged	-3	9	14	126	0	1	2	3	true	dark blue	false
-short blade	1	1	kinetic	melee	5	14	7	98	0	0	0	0	false	grey	false
-crowbar	1	1	kinetic	melee	2	10	9	90	0	1	0	1	true	grey	false
-long blade	2	1	kinetic	melee	4	12	10	120	0	0	0	1	false	grey	false
-maul	2	2	kinetic	melee	1	9	13	117	0	1	0	1	false	grey	false
-monoblade	3	1	kinetic	melee	4	12	14	168	0	2	0	1	false	grey	false
-industrial hammer	3	2	kinetic	melee	-1	8	19	152	0	4	0	3	true	grey	false
-energy blade	4	1	kinetic	melee	3	13	16	208	0	5	0	1	true	grey	false
-gravity maul	4	2	kinetic, EM	melee	-3	9	28	252	0	4	0	4	true	dark grey	false
-thermal blade	1	1	thermal	melee	5	13	7	91	0	0	0	0	false	red	false
-plasma torch	1	1	thermal, EM	melee	1	9	10	90	0	2	0	2	true	purple	false
-plasma blade	2	1	thermal, EM	melee	4	12	11	132	0	1	0	1	false	purple	false
-thermal maul	2	2	thermal	melee	0	9	16	144	0	2	0	3	false	red	false
-plasma maul	3	1	thermal, EM	melee	3	11	15	165	0	3	0	2	false	purple	false
-thermal glaive	3	2	thermal	melee	2	10	18	180	0	2	0	2	false	red	false
-fusion blade	4	1	thermal	melee	2	12	18	216	0	4	0	3	true	red	false
-sun hammer	4	2	thermal, kinetic	melee	-3	7	30	210	0	4	0	5	true	dark red	false
-ion blade	1	1	EM	melee	5	13	6	78	0	0	0	1	false	blue	false
-shock batton	1	1	EM	melee	4	11	7	77	0	0	0	1	false	blue	false
-spark blade	2	1	EM	melee	4	12	8	96	chain: 2	0	0	1	false	blue	false
-ion maul	2	2	EM	melee	2	10	11	110	0	1	0	2	false	blue	false
-arc blade	3	1	EM	melee	3	12	11	132	chain: 3	0	0	3	false	blue	false
-ion glaive	3	2	EM	melee	0	8	17	136	0	1	0	2	true	blue	false
-disruptor blade	4	1	EM, kinetic	melee	2	11	17	187	0	3	0	2	true	dark blue	false
-arc maul	4	2	EM	melee	-2	7	24	168	chain: 5	2	0	4	true	blue	false
-claw	1	0	kinetic	melee	4	12	3	36	0	0	0	0	false	grey	true
-weak bite	1	0	kinetic	melee	2	10	3	30	0	0	0	0	false	grey	true
-strong bite	2	0	kinetic	melee	1	8	7	56	0	1	0	1	false	grey	true
-acid spit	2	0	thermal	ranged	1	8	5	40	0	0	0	1	false	red	true
+nailgun	1	1	kinetic	ranged	3	12	80	960	0	0	0	1	false	grey	false
+handgun	1	1	kinetic	ranged	2	11	90	990	0	0	1	2	false	grey	false
+scattergun	2	1	kinetic	ranged	-2	8	80	640	spread: 3	0	2	4	false	grey	false
+coilgun	3	1	kinetic	ranged	0	10	120	1200	0	10	2	3	true	grey	false
+autorifle	2	2	kinetic	ranged	3	13	100	1300	0	0	1	3	false	grey	false
+magrifle	3	2	kinetic	ranged	1	9	140	1260	0	20	3	4	true	grey	false
+minigun	3	2	kinetic	ranged	-4	7	110	770	spread: 5	0	5	5	true	grey	false
+railgun	4	2	kinetic	ranged	-2	8	160	1280	0	40	4	6	true	grey	false
+laser blaster	1	1	thermal	ranged	5	11	70	770	0	0	0	1	false	red	false
+plasma blaster	2	1	thermal, EM	ranged	1	10	100	1000	0	0	1	2	false	purple	false
+scatter laser	2	1	thermal	ranged	1	8	70	560	spread: 2	0	0	1	false	red	false
+particle beamer	3	1	thermal, kinetic	ranged	-1	10	120	1200	0	20	2	3	true	dark red	false
+autolaser	2	2	thermal	ranged	4	12	100	1200	0	0	0	2	false	red	false
+plasma launcher	3	2	thermal, EM	ranged	-1	8	110	880	splash: 3	0	2	4	false	purple	false
+particle cannon	4	2	thermal, kinetic	ranged	-3	9	150	1350	0	30	3	5	true	dark red	false
+fusion cannon	4	2	thermal	ranged	-4	7	180	1260	0	20	2	6	true	red	false
+ion blaster	1	1	EM	ranged	3	10	60	600	0	0	1	2	false	blue	false
+arc projector	2	1	EM	ranged	1	7	50	350	chain: 5	0	0	3	false	blue	false
+ion repeater	3	1	EM	ranged	4	11	70	770	0	0	1	2	false	blue	false
+scrambler	3	1	EM	ranged	0	5	140	700	0	0	3	4	false	blue	false
+electro-shotgun	2	2	EM	ranged	-1	7	70	490	spread: 3	0	2	3	false	blue	false
+arc cannon	2	2	EM	ranged	0	5	70	350	chain: 7	0	1	4	false	blue	false
+EMP launcher	3	2	EM	ranged	-1	7	100	700	splash: 4	0	2	3	false	blue	false
+disruptor	4	2	EM, kinetic	ranged	-3	9	140	1260	0	10	2	3	true	dark blue	false
+short blade	1	1	kinetic	melee	5	14	70	980	0	0	0	0	false	grey	false
+crowbar	1	1	kinetic	melee	2	10	90	900	0	10	0	1	true	grey	false
+long blade	2	1	kinetic	melee	4	12	100	1200	0	0	0	1	false	grey	false
+maul	2	2	kinetic	melee	1	9	130	1170	0	10	0	1	false	grey	false
+monoblade	3	1	kinetic	melee	4	12	140	1680	0	20	0	1	false	grey	false
+industrial hammer	3	2	kinetic	melee	-1	8	190	1520	0	40	0	3	true	grey	false
+energy blade	4	1	kinetic	melee	3	13	160	2080	0	50	0	1	true	grey	false
+gravity maul	4	2	kinetic, EM	melee	-3	9	280	2520	0	40	0	4	true	dark grey	false
+thermal blade	1	1	thermal	melee	5	13	70	910	0	0	0	0	false	red	false
+plasma torch	1	1	thermal, EM	melee	1	9	100	900	0	20	0	2	true	purple	false
+plasma blade	2	1	thermal, EM	melee	4	12	110	1320	0	10	0	1	false	purple	false
+thermal maul	2	2	thermal	melee	0	9	160	1440	0	20	0	3	false	red	false
+plasma maul	3	1	thermal, EM	melee	3	11	150	1650	0	30	0	2	false	purple	false
+thermal glaive	3	2	thermal	melee	2	10	180	1800	0	20	0	2	false	red	false
+fusion blade	4	1	thermal	melee	2	12	180	2160	0	40	0	3	true	red	false
+sun hammer	4	2	thermal, kinetic	melee	-3	7	300	2100	0	40	0	5	true	dark red	false
+ion blade	1	1	EM	melee	5	13	60	780	0	0	0	1	false	blue	false
+shock batton	1	1	EM	melee	4	11	70	770	0	0	0	1	false	blue	false
+spark blade	2	1	EM	melee	4	12	80	960	chain: 2	0	0	1	false	blue	false
+ion maul	2	2	EM	melee	2	10	110	1100	0	10	0	2	false	blue	false
+arc blade	3	1	EM	melee	3	12	110	1320	chain: 3	0	0	3	false	blue	false
+ion glaive	3	2	EM	melee	0	8	170	1360	0	10	0	2	true	blue	false
+disruptor blade	4	1	EM, kinetic	melee	2	11	170	1870	0	30	0	2	true	dark blue	false
+arc maul	4	2	EM	melee	-2	7	240	1680	chain: 5	20	0	4	true	blue	false
+claw	1	0	kinetic	melee	4	12	30	360	0	0	0	0	false	grey	true
+weak bite	1	0	kinetic	melee	2	10	30	300	0	0	0	0	false	grey	true
+strong bite	2	0	kinetic	melee	1	8	70	560	0	10	0	1	false	grey	true
+acid spit	2	0	thermal	ranged	1	8	50	400	0	0	0	1	false	red	true
