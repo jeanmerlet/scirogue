@@ -5,6 +5,8 @@ from .ecs.systems.fov import do_fov
 from .ecs.systems.render import render_all
 from .ecs.systems.ai import take_monster_turns
 from .ecs.systems.movement import try_move
+from .ecs.systems.combat import fire_ranged
+from .ecs.systems.combat_calculations import attack_weapon
 from .ecs.systems.hud import get_player_stats
 from .ecs.systems.inventory import pick_up, drop, equip_item, unequip_slot, use_consumable
 from .map.derelict import Derelict
@@ -52,6 +54,7 @@ class PlayState():
         self.world.add(player, Speed(1.0))
         self.player = player
         self.turn_taken = False
+        self.ranged_target = None
         self.show_all = False
         self.derelict = Derelict(self.rng)
         self.derelict.gen_maps(self.world)
@@ -138,6 +141,12 @@ class PlayState():
             case "inspect":
                 return InspectState(self.term, self.world, self.map,
                                     self.player, self)
+            case "target":
+                if attack_weapon(self.world, self.player, "ranged") is None:
+                    self.log.add("You are not wielding a ranged weapon.")
+                    return self
+                return TargetState(self.term, self.world, self.map,
+                                   self.player, self)
             case "drop":
                 return DropMenu(self.term, self.world, self.map, self.player,
                                 self.log, self)
@@ -265,6 +274,124 @@ class InspectState():
             if self.target is not None:
                 pos = self.world.get(Position, self.target)
                 self.x, self.y = pos.x, pos.y
+        elif cmd[0] == "quit":
+            return self.prev_state
+        return self
+
+
+class TargetState():
+    def __init__(self, term, world, game_map, player, prev_state):
+        self.term = term
+        self.input = Input("target", ["play_moves", "target", "next",
+                                      "cancel"])
+        self.world = world
+        self.map = game_map
+        self.player = player
+        self.prev_state = prev_state
+        self.prev_state.turn_taken = False
+        player_pos = self.world.get(Position, self.player)
+        self.targets = self._visible_enemies()
+        remembered = self.prev_state.ranged_target
+        if remembered in self.targets:
+            self.target = remembered
+        elif self.targets:
+            self.target = min(
+                self.targets,
+                key=lambda eid: self._distance_sq(eid, player_pos.x,
+                                                   player_pos.y)
+            )
+        else:
+            self.target = None
+        if self.target is not None:
+            pos = self.world.get(Position, self.target)
+            self.x, self.y = pos.x, pos.y
+        else:
+            self.x, self.y = player_pos.x, player_pos.y
+
+    def _distance_sq(self, eid, x, y):
+        pos = self.world.get(Position, eid)
+        return (pos.x - x) ** 2 + (pos.y - y) ** 2
+
+    def _visible_enemies(self):
+        player_faction = self.world.get(Faction, self.player).tag
+        enemies = []
+        for eid, pos, faction, hp in self.world.view(
+                Position, Faction, HP):
+            if eid == self.player or pos.z != self.map.z:
+                continue
+            if faction.tag == player_faction or hp.current <= 0:
+                continue
+            if self.map.visible[pos.x, pos.y]:
+                enemies.append(eid)
+        return enemies
+
+    def _target_at_cursor(self):
+        eid = self.map.actors[self.x, self.y]
+        if eid in self.targets:
+            return eid
+        return None
+
+    def _next_target(self):
+        self.targets = self._visible_enemies()
+        if not self.targets:
+            return None
+        player_pos = self.world.get(Position, self.player)
+        self.targets.sort(
+            key=lambda eid: self._distance_sq(
+                eid, player_pos.x, player_pos.y
+            )
+        )
+        if self.target not in self.targets:
+            return self.targets[0]
+        index = self.targets.index(self.target)
+        return self.targets[(index + 1) % len(self.targets)]
+
+    def _move_cursor(self, dx, dy):
+        x, y = self.x + dx, self.y + dy
+        if self.map.in_bounds(x, y) and self.map.visible[x, y]:
+            self.x, self.y = x, y
+            self.targets = self._visible_enemies()
+            self.target = self._target_at_cursor()
+
+    def _render(self):
+        clear_area(self.term, 0, 0, self.map.w + 1, self.map.h + 1)
+        render_all(self.term, self.world, self.map)
+        self.term.composition_on()
+        draw_inspect(self.term, self.x, self.y)
+        self.term.composition_off()
+        self.term.refresh()
+
+    def tick(self):
+        self._render()
+        cmd = self.input.poll(self.term)
+        if not cmd:
+            return self
+        if cmd[0] == "move":
+            _, dx, dy = cmd
+            self._move_cursor(dx, dy)
+        elif cmd[0] == "next":
+            self.target = self._next_target()
+            if self.target is not None:
+                pos = self.world.get(Position, self.target)
+                self.x, self.y = pos.x, pos.y
+        elif cmd[0] == "fire":
+            player_pos = self.world.get(Position, self.player)
+            if (self.x, self.y) == (player_pos.x, player_pos.y):
+                self.prev_state.log.add("Select a target.")
+                return self
+            selected_target = self._target_at_cursor()
+            if not fire_ranged(
+                    self.world, self.map, self.player, self.x, self.y,
+                    self.prev_state.log):
+                return self.prev_state
+            if selected_target in self._visible_enemies():
+                self.prev_state.ranged_target = selected_target
+            else:
+                self.prev_state.ranged_target = None
+            take_monster_turns(
+                self.world, self.map, self.player, self.prev_state.log
+            )
+            return self.prev_state
         elif cmd[0] == "quit":
             return self.prev_state
         return self

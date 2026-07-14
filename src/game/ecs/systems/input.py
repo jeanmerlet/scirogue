@@ -38,6 +38,7 @@ class Input:
                 blt.TK_E:         ("equipment_menu",),
                 blt.TK_P:         ("equip_menu",),
                 blt.TK_R:         ("unequip_menu",),
+                blt.TK_F:         ("target",),
                 blt.TK_GRAVE:     ("show_all",),
                 blt.TK_ESCAPE:    ("game_menu",),
                 ord(">"):         ("use_elevator",)
@@ -50,6 +51,9 @@ class Input:
             "inspect": {
                 blt.TK_V:         ("select",),
                 blt.TK_ENTER:     ("select",),
+            },
+            "target": {
+                blt.TK_F:         ("fire",),
             },
             "next": {
                 blt.TK_TAB:       ("next",),
