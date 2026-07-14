@@ -117,13 +117,34 @@ def _log_ranged_result(log, attacker_name, defender_name, hit, damage=0):
         )
 
 
-def fire_ranged(world, game_map, attacker, target_x, target_y, log=None):
-    """Fire at a tile, stopping at the first actor or blocking tile."""
-    weapon = attack_weapons(world, attacker, "ranged")
-    weapon = weapon[0] if weapon else None
-    if weapon is None:
-        return False
+def clear_terrain_line(game_map, x0, y0, x1, y1):
+    """Return whether terrain permits a shot between two tiles."""
+    return all(
+        not game_map.block[x, y] and not game_map.edge[x, y]
+        for x, y in _line(x0, y0, x1, y1)
+    )
 
+
+def _log_blocked_shot(log, attacker_name):
+    if not log:
+        return
+    if attacker_name == "player":
+        log.add("Your shot hits an obstruction.")
+    else:
+        log.add(f"{attacker_name.capitalize()}'s shot hits an obstruction.")
+
+
+def _log_empty_shot(log, attacker_name):
+    if not log:
+        return
+    if attacker_name == "player":
+        log.add("You fire into empty space.")
+    else:
+        log.add(f"{attacker_name.capitalize()} fires into empty space.")
+
+
+def _fire_weapon(world, game_map, attacker, weapon, target_x, target_y,
+                 log):
     attacker_pos = world.get(Position, attacker)
     attacker_name = world.get(Name, attacker).text or "something"
     for x, y in _line(
@@ -132,7 +153,8 @@ def fire_ranged(world, game_map, attacker, target_x, target_y, log=None):
         if target >= 0 and target != attacker:
             defender_hp = world.get(HP, target)
             if defender_hp is None:
-                return True
+                _log_blocked_shot(log, attacker_name)
+                return
             defender_name = world.get(Name, target).text or "something"
             _, _, _, hit = roll_to_hit(
                 world, attacker, target, "ranged", game_map.rng, weapon
@@ -141,7 +163,7 @@ def fire_ranged(world, game_map, attacker, target_x, target_y, log=None):
                 _log_ranged_result(
                     log, attacker_name, defender_name, False
                 )
-                return True
+                return
             damage = calculate_damage(
                 world, attacker, target, "ranged", game_map.rng,
                 weapon=weapon
@@ -152,13 +174,23 @@ def fire_ranged(world, game_map, attacker, target_x, target_y, log=None):
             )
             if defender_hp.current <= 0:
                 die(world, game_map, target, log)
-            return True
+            return
 
         if game_map.block[x, y] or game_map.edge[x, y]:
-            if log:
-                log.add("Your shot hits an obstruction.")
-            return True
+            _log_blocked_shot(log, attacker_name)
+            return
 
-    if log:
-        log.add("You fire into empty space.")
+    _log_empty_shot(log, attacker_name)
+
+
+def fire_ranged(world, game_map, attacker, target_x, target_y, log=None):
+    """Fire a ranged group, stopping each shot at its first blocker."""
+    weapons = attack_weapons(world, attacker, "ranged")
+    if not weapons:
+        return False
+
+    for weapon in weapons:
+        _fire_weapon(
+            world, game_map, attacker, weapon, target_x, target_y, log
+        )
     return True
