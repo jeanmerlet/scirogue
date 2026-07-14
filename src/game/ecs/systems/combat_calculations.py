@@ -101,7 +101,7 @@ def equipment_encumbrance(world, actor_eid):
     return total
 
 
-def evasion(world, actor_eid):
+def evasion(world, actor_eid, attack_skill=None):
     skills = world.get(Skills, actor_eid)
     abilities = world.get(AbilityScores, actor_eid)
     if skills is not None and abilities is not None:
@@ -109,6 +109,8 @@ def evasion(world, actor_eid):
     else:
         stats = world.get(CombatStats, actor_eid)
         dodge_bonus = stats.dodge if stats is not None else 0
+    if attack_skill == "melee":
+        dodge_bonus += max(0, dodge_bonus) // 2
     return 10 + dodge_bonus - equipment_encumbrance(world, actor_eid)
 
 
@@ -123,14 +125,14 @@ def actor_hit_chance(world, attacker_eid, defender_eid, skill,
                      weapon=None):
     return hit_chance(
         attack_bonus(world, attacker_eid, skill, weapon),
-        evasion(world, defender_eid)
+        evasion(world, defender_eid, skill)
     )
 
 
 def roll_to_hit(world, attacker_eid, defender_eid, skill, rng,
                 weapon=None):
     bonus = attack_bonus(world, attacker_eid, skill, weapon)
-    defense = evasion(world, defender_eid)
+    defense = evasion(world, defender_eid, skill)
     roll = rng.randint(1, 20)
     total = roll + bonus
     return roll, total, defense, total > defense
