@@ -15,7 +15,7 @@ ACTORS = {
         "kinetic_resistance": 0.0,
         "thermal_resistance": 0.0,
         "em_resistance": 0.0,
-        "attacks": ["claw", "claw"],
+        "attack_groups": {"melee": ["claw", "claw"]},
         "desc": "A small, fast scuttling alien.",
     },
     "skittermaw": {
@@ -34,7 +34,7 @@ ACTORS = {
         "kinetic_resistance": 0.05,
         "thermal_resistance": 0.0,
         "em_resistance": 0.0,
-        "attacks": ["strong bite"],
+        "attack_groups": {"melee": ["strong bite"]},
         "desc": "A heavy predator with jaws like hydraulic cutters.",
     },
     "skitterseer": {
@@ -53,7 +53,10 @@ ACTORS = {
         "kinetic_resistance": 0.0,
         "thermal_resistance": 0.0,
         "em_resistance": 0.0,
-        "attacks": ["acid spit", "weak bite"],
+        "attack_groups": {
+            "melee": ["weak bite"],
+            "ranged": ["acid spit"],
+        },
         "desc": "An eerie psychic Skitter that senses vibrations through metal.",
     },
 }

@@ -41,10 +41,13 @@ def spawn_actor(world, key, x, y, z):
         thermal_resistance=data["thermal_resistance"],
         em_resistance=data["em_resistance"]
     ))
-    world.add(eid, Attacks([
-        _weapon_from_data(WEAPONS[attack_name])
-        for attack_name in data["attacks"]
-    ]))
+    world.add(eid, Attacks({
+        group: [
+            _weapon_from_data(WEAPONS[attack_name])
+            for attack_name in attack_names
+        ]
+        for group, attack_names in data["attack_groups"].items()
+    }))
     # Keep fixed damage working until combat.py uses CombatStats/Attacks.
     world.add(eid, Attack(data["attack"]))
     world.add(eid, Speed(data["speed"]))

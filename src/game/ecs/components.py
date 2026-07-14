@@ -176,7 +176,7 @@ class CombatStats:
 
 @dataclass
 class Attacks:
-    attacks: list = field(default_factory=list)
+    groups: dict = field(default_factory=dict)
 
 @dataclass
 class HP:
@@ -190,4 +190,3 @@ class Attack:
 @dataclass
 class Speed:
     mult: float
-

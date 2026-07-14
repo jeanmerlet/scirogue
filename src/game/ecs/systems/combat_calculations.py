@@ -41,16 +41,18 @@ def effective_skill(world, actor_eid, skill):
     )
 
 
-def attack_weapon(world, actor_eid, skill):
+def attack_weapons(world, actor_eid, skill):
     attacks = world.get(Attacks, actor_eid)
     if attacks is not None:
-        for weapon in attacks.attacks:
-            if weapon.skill == skill:
-                return weapon
+        return [
+            weapon for weapon in attacks.groups.get(skill, ())
+            if weapon.skill == skill
+        ]
 
     equipment = world.get(Equipment, actor_eid)
     if equipment is None:
-        return None
+        return []
+    weapons = []
     seen = set()
     for slot in ("hand1", "hand2"):
         item_eid = equipment.slots.get(slot)
@@ -59,8 +61,13 @@ def attack_weapon(world, actor_eid, skill):
         seen.add(item_eid)
         weapon = world.get(Weapon, item_eid)
         if weapon is not None and weapon.skill == skill:
-            return weapon
-    return None
+            weapons.append(weapon)
+    return weapons
+
+
+def attack_weapon(world, actor_eid, skill):
+    weapons = attack_weapons(world, actor_eid, skill)
+    return weapons[0] if weapons else None
 
 
 def attack_bonus(world, actor_eid, skill, weapon=None):
