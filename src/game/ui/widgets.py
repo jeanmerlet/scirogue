@@ -23,10 +23,14 @@ def draw_box(term, rect, color="light grey"):
 
 def draw_bar(term, font, x, y, w, cur, maxv, fg, bg="dark grey"):
     cur = max(0, min(cur, maxv))
-    filled = 0 if maxv <= 0 else int(round((cur / maxv) * w))
+    bar_width = max(0, w * term.xs - 2)
+    filled = (
+        0 if maxv <= 0
+        else int(round((cur / maxv) * bar_width))
+    )
     term.color(bg)
-    for i in range(w * term.xs - 2):
+    for i in range(bar_width):
         term.print(term.xs * x + i, term.ys * y, f"[font={font}]█")
     term.color(fg)
-    for i in range(filled * term.xs - 2):
+    for i in range(filled):
         term.print(term.xs * x + i, term.ys * y, f"[font={font}]█")

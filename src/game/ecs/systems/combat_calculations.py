@@ -140,7 +140,6 @@ def roll_to_hit(world, attacker_eid, defender_eid, skill, rng,
 
 DAMAGE_VARIABILITY = 0.20
 SKILL_DAMAGE_PER_POINT = 0.05
-DAMAGE_SCALE = 10
 
 
 def equipment_armor_value(world, actor_eid):
@@ -173,7 +172,7 @@ def mitigation_rating(world, actor_eid):
 
 
 def mitigation_reduction(world, actor_eid):
-    return (max(0, mitigation_rating(world, actor_eid)) // 2) * DAMAGE_SCALE
+    return max(0, mitigation_rating(world, actor_eid)) // 2
 
 
 def damage_resistance(world, actor_eid, damage_type):
