@@ -2,7 +2,7 @@ from .widgets import draw_box, draw_bar, term_print
 
 
 def _stat_print(term, x, y, text):
-    term_print(term, x, y, f"[font=gui-bold]{text}")
+    term_print(term, x, y, f"[font=gui]{text}")
 
 
 class SidebarPanel:
@@ -15,7 +15,7 @@ class SidebarPanel:
         draw_bar(term, x, y, rect.w - 2, player_stats.oxy,
                  player_stats.max_oxy, "dark cyan")
         y += 3
-        term.color("white")
+        term.color("light grey")
         _stat_print(
             term, x, y,
             f"AW: {player_stats.awareness:<3} "
@@ -28,14 +28,18 @@ class SidebarPanel:
             f"VI: {player_stats.vigor}"
         )
         y += 1
-        _stat_print(term, x, y, f"Armor: {player_stats.armor}")
-        y += 1
-        _stat_print(term, x, y, f"Evasion: {player_stats.evasion}")
-        y += 1
+        term.color("dark grey")
         _stat_print(
             term, x, y,
-            f"XL: {player_stats.xp_level} "
-            f"XP: {player_stats.xp_percent} %"
+            f"AV: {player_stats.armor:<3} "
+            f"EV: {player_stats.evasion}"
+        )
+        y += 1
+        term.color("white")
+        _stat_print(
+            term, x, y,
+            f"XL: {player_stats.xp_level:<3} "
+            f"XP: {player_stats.xp_percent}%"
         )
 
 class LogPanel:
