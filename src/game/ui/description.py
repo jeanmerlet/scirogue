@@ -13,7 +13,7 @@ def _wrap_desc(desc, w):
     line = ""
     line_len = 0
     for word in split_desc:
-        if line_len + len(word) + 3 > w * 2:
+        if line_len + len(word) + 3 > w:
             out.append(line)
             line = word
             line_len = len(word)
@@ -37,11 +37,12 @@ def _render_desc(term, title_text, title_color, description):
 
     title_text = title_text.capitalize()
     title = f"[font=gui][color={title_color}]{title_text}[/color]"
-    desc = _wrap_desc(description, w - 2)
+    desc = _wrap_desc(description, (w - 2) * term.xs)
 
     y += 1
+    title_w = (len(title_text) + term.xs - 1) // term.xs
     centerx = term.w // 2
-    term_print(term, centerx - (len(title_text) // 2), y, title)
+    term_print(term, centerx - title_w // 2, y, title)
     y += 1
     for line in desc:
         y += 1

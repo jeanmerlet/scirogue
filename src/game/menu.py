@@ -45,6 +45,7 @@ class Menu():
         self.player = player_eid
         self.log = log
         self.prev_state = prev_state
+        self.camera = prev_state.camera
         self.prev_state.turn_taken = False
         self.sel_idx = 0
         self.letters = False
@@ -57,8 +58,9 @@ class Menu():
         raise NotImplementedError
 
     def _render(self, lines, w):
-        clear_area(self.term, 0, 0, self.map.w + 1, self.map.h + 1)
-        render_all(self.term, self.world, self.map)
+        area = self.camera.viewport
+        clear_area(self.term, area.x, area.y, area.w, area.h)
+        render_all(self.term, self.world, self.map, self.camera)
         draw_menu(self.term, self.title, lines, w, self.sel_idx)
 
     def _number_to_index(self, num):

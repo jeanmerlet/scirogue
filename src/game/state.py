@@ -12,7 +12,7 @@ from .ecs.systems.inventory import pick_up, drop, equip_item, unequip_slot, use_
 from .map.derelict import Derelict
 from .factories import spawn_actor, spawn_item, spawn_elevator
 from .data.items import ITEM_KEYS
-from .ui.layout import make_layout
+from .ui.layout import Camera, make_layout
 from .ui.panels import SidebarPanel, LogPanel
 from .ui.widgets import clear_area
 from .ui.description import draw_inspect
@@ -67,10 +67,11 @@ class PlayState():
         self.log = MessageLog()
         self.sidebar = SidebarPanel()
         self.logpanel = LogPanel()
-        sidebar_w = term.w - self.map.w
-        log_h = term.h - self.map.h
-        self.layout = make_layout(self.term, self.map.w, self.map.h,
-                                  sidebar_w, log_h)
+        self.layout = make_layout(self.term)
+        self.camera = Camera(
+            self.layout.map_area, self.map.w, self.map.h
+        )
+        self._center_camera()
 
     def _populate_map(self):
         # TODO: stack items when duplicating in same spot (or increase count)
@@ -99,10 +100,17 @@ class PlayState():
         radius = self.world.get(FOVRadius, self.player).radius
         do_fov(pos.x, pos.y, radius, self.map)
 
+    def _center_camera(self):
+        pos = self.world.get(Position, self.player)
+        self.camera.center_on(pos.x, pos.y)
+
     def _render(self):
         self.term.clear()
         self._fov()
-        render_all(self.term, self.world, self.map, self.show_all)
+        self._center_camera()
+        render_all(
+            self.term, self.world, self.map, self.camera, self.show_all
+        )
         stats = get_player_stats(self.world, self.player)
         self.sidebar.render(self.term, self.layout.sidebar, stats)
         self.logpanel.render(self.term, self.layout.log, self.log)
@@ -110,7 +118,8 @@ class PlayState():
 
     def _animate_projectile(self, source, path, color):
         animate_projectile(
-            self.term, self.world, self.map, source, path, color
+            self.term, self.world, self.map, self.camera,
+            source, path, color
         )
 
     def _handle_player_cmd(self, cmd):
@@ -191,6 +200,8 @@ class PlayState():
         self.map.actors[pos.x, pos.y] = -1
         self.map = self.derelict.maps[new_z]
         self.map.z = new_z
+        self.camera.map_w = self.map.w
+        self.camera.map_h = self.map.h
         pos.x, pos.y, pos.z = x, y, new_z
         self.map.actors[pos.x, pos.y] = self.player
         self.turn_taken = True
@@ -201,6 +212,7 @@ class PlayState():
         cmd = self.input.poll(self.term)
         state = self._handle_player_cmd(cmd)
         if self.turn_taken:
+            self._center_camera()
             take_monster_turns(
                 self.world, self.map, self.player, self.log,
                 projectile_callback=self._animate_projectile
@@ -229,6 +241,7 @@ class InspectState():
         self.target = None
         self._update_target()
         self.prev_state = prev_state
+        self.camera = prev_state.camera
         self.prev_state.turn_taken = False
 
     def _update_target(self):
@@ -257,10 +270,15 @@ class InspectState():
             self._update_target()
 
     def _render(self):
-        clear_area(self.term, 0, 0, self.map.w + 1, self.map.h + 1)
-        render_all(self.term, self.world, self.map)
+        area = self.camera.viewport
+        clear_area(self.term, area.x, area.y, area.w, area.h)
+        render_all(self.term, self.world, self.map, self.camera)
         self.term.composition_on()
-        draw_inspect(self.term, self.x, self.y)
+        if self.camera.contains(self.x, self.y):
+            screen_x, screen_y = self.camera.world_to_screen(
+                self.x, self.y
+            )
+            draw_inspect(self.term, screen_x, screen_y)
         self.term.composition_off()
         self.term.refresh()
 
@@ -297,6 +315,7 @@ class TargetState():
         self.map = game_map
         self.player = player
         self.prev_state = prev_state
+        self.camera = prev_state.camera
         self.prev_state.turn_taken = False
         player_pos = self.world.get(Position, self.player)
         self.targets = self._visible_enemies()
@@ -363,16 +382,22 @@ class TargetState():
             self.target = self._target_at_cursor()
 
     def _render(self):
-        clear_area(self.term, 0, 0, self.map.w + 1, self.map.h + 1)
-        render_all(self.term, self.world, self.map)
+        area = self.camera.viewport
+        clear_area(self.term, area.x, area.y, area.w, area.h)
+        render_all(self.term, self.world, self.map, self.camera)
         self.term.composition_on()
-        draw_inspect(self.term, self.x, self.y)
+        if self.camera.contains(self.x, self.y):
+            screen_x, screen_y = self.camera.world_to_screen(
+                self.x, self.y
+            )
+            draw_inspect(self.term, screen_x, screen_y)
         self.term.composition_off()
         self.term.refresh()
 
     def _animate_projectile(self, source, path, color):
         animate_projectile(
-            self.term, self.world, self.map, source, path, color
+            self.term, self.world, self.map, self.camera,
+            source, path, color
         )
 
     def tick(self):

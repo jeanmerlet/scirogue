@@ -1,8 +1,9 @@
 from .widgets import clear_area, term_print, put, draw_box
 from .layout import Rect
+from math import ceil
 
 def draw_menu(term, title, lines, w, selected_idx):
-    w = w // 2 + 3
+    w = ceil(w / term.xs) + 3
     h = len(lines) + 5
     x = ((term.w - w) // 2)
     y = ((term.h - h) // 3)
@@ -11,9 +12,12 @@ def draw_menu(term, title, lines, w, selected_idx):
     draw_box(term, inv_area)
     # title
     y += 1
+    title_w = ceil(len(title) / term.xs)
     centerx = term.w // 2
     term.color("white")
-    term_print(term, centerx - (len(title) // 2) + 1, y, f"[font=gui]{title}")
+    term_print(
+        term, centerx - title_w // 2, y, f"[font=gui]{title}"
+    )
     # entries
     y += 2
     for i, line in enumerate(lines):

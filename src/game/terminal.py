@@ -4,19 +4,19 @@ class Term:
     def __init__(self):
         self.font_path = "../assets/fonts/CourierPrime-Regular.ttf"
         self.bold_font_path = "../assets/fonts/CourierPrime-Bold.ttf"
-        self.xs = 2
-        self.ys = 1
-        self.w = 100
-        self.h = 60
+        self.xs = 4
+        self.ys = 2
+        self.w = 50
+        self.h = 30
 
     def __enter__(self):
         blt.open()
         blt.set("window.title='scirogue'")
         blt.set(f"window.size={self.xs*self.w}x{self.ys*self.h}")
         blt.set("window.cellsize=8x16")
-        blt.set(f"font: {self.font_path}, size=16, spacing={self.xs}x{self.ys}")
+        blt.set(f"font: {self.font_path}, size=32, spacing={self.xs}x{self.ys}")
         blt.set(
-            f"bold font: {self.bold_font_path}, size=16, "
+            f"bold font: {self.bold_font_path}, size=32, "
             f"spacing={self.xs}x{self.ys}"
         )
         blt.set(f"gui font: {self.font_path}, size=12")

@@ -45,8 +45,10 @@ class SidebarPanel:
 class LogPanel:
     def render(self, term, rect, log):
         draw_box(term, rect)
-        x, y = rect.x + 2, rect.y + 1
-        w, h = rect.w - 1, rect.h - 2
+        x = rect.x * term.xs + 2
+        y = rect.y * term.ys + 1
+        w = rect.w * term.xs - 4
+        h = rect.h * term.ys - 2
         wrapped_msgs = []
         for msg in log.msgs[-h:]:
             wrapped_msgs += log._wrap(msg, w)
