@@ -71,7 +71,9 @@ def animate_projectile(term, world, game_map, source, path, color):
         render_all(term, world, game_map)
         term.composition_on()
         term.color(color)
-        term.put(term.xs * x, term.ys * y, glyph)
+        term.print(
+            term.xs * x, term.ys * y, f"[font=bold]{glyph}"
+        )
         term.composition_off()
         term.refresh()
         time.sleep(PROJECTILE_FRAME_SECONDS)

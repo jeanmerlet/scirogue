@@ -3,6 +3,7 @@ from bearlibterminal import terminal as blt
 class Term:
     def __init__(self):
         self.font_path = "../assets/fonts/CourierPrime-Regular.ttf"
+        self.bold_font_path = "../assets/fonts/CourierPrime-Bold.ttf"
         self.xs = 2
         self.ys = 1
         self.w = 100
@@ -14,6 +15,10 @@ class Term:
         blt.set(f"window.size={self.xs*self.w}x{self.ys*self.h}")
         blt.set("window.cellsize=8x16")
         blt.set(f"font: {self.font_path}, size=16, spacing={self.xs}x{self.ys}")
+        blt.set(
+            f"bold font: {self.bold_font_path}, size=16, "
+            f"spacing={self.xs}x{self.ys}"
+        )
         blt.set(f"gui font: {self.font_path}, size=12")
         blt.refresh()
         return self

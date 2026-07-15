@@ -15,14 +15,14 @@ autolaser	2	2	thermal	ranged	4	12	100	1200	0	0	0	2	false	red	false
 plasma launcher	3	2	thermal, EM	ranged	-1	8	110	880	splash: 3	0	2	4	false	purple	false
 particle cannon	4	2	thermal, kinetic	ranged	-3	9	150	1350	0	30	3	5	true	dark red	false
 fusion cannon	4	2	thermal	ranged	-4	7	180	1260	0	20	2	6	true	red	false
-ion blaster	1	1	EM	ranged	3	10	60	600	0	0	1	2	false	blue	false
-arc projector	2	1	EM	ranged	1	7	50	350	chain: 5	0	0	3	false	blue	false
-ion repeater	3	1	EM	ranged	4	11	70	770	0	0	1	2	false	blue	false
-scrambler	3	1	EM	ranged	0	5	140	700	0	0	3	4	false	blue	false
-electro-shotgun	2	2	EM	ranged	-1	7	70	490	spread: 3	0	2	3	false	blue	false
-arc cannon	2	2	EM	ranged	0	5	70	350	chain: 7	0	1	4	false	blue	false
-EMP launcher	3	2	EM	ranged	-1	7	100	700	splash: 4	0	2	3	false	blue	false
-disruptor	4	2	EM, kinetic	ranged	-3	9	140	1260	0	10	2	3	true	dark blue	false
+ion blaster	1	1	EM	ranged	3	10	60	600	0	0	1	2	false	cyan	false
+arc projector	2	1	EM	ranged	1	7	50	350	chain: 5	0	0	3	false	cyan	false
+ion repeater	3	1	EM	ranged	4	11	70	770	0	0	1	2	false	cyan	false
+scrambler	3	1	EM	ranged	0	5	140	700	0	0	3	4	false	cyan	false
+electro-shotgun	2	2	EM	ranged	-1	7	70	490	spread: 3	0	2	3	false	cyan	false
+arc cannon	2	2	EM	ranged	0	5	70	350	chain: 7	0	1	4	false	cyan	false
+EMP launcher	3	2	EM	ranged	-1	7	100	700	splash: 4	0	2	3	false	cyan	false
+disruptor	4	2	EM, kinetic	ranged	-3	9	140	1260	0	10	2	3	true	dark cyan	false
 short blade	1	1	kinetic	melee	5	14	70	980	0	0	0	0	false	grey	false
 crowbar	1	1	kinetic	melee	2	10	90	900	0	10	0	1	true	grey	false
 long blade	2	1	kinetic	melee	4	12	100	1200	0	0	0	1	false	grey	false
@@ -39,14 +39,14 @@ plasma maul	3	1	thermal, EM	melee	3	11	150	1650	0	30	0	2	false	purple	false
 thermal glaive	3	2	thermal	melee	2	10	180	1800	0	20	0	2	false	red	false
 fusion blade	4	1	thermal	melee	2	12	180	2160	0	40	0	3	true	red	false
 sun hammer	4	2	thermal, kinetic	melee	-3	7	300	2100	0	40	0	5	true	dark red	false
-ion blade	1	1	EM	melee	5	13	60	780	0	0	0	1	false	blue	false
-shock batton	1	1	EM	melee	4	11	70	770	0	0	0	1	false	blue	false
-spark blade	2	1	EM	melee	4	12	80	960	chain: 2	0	0	1	false	blue	false
-ion maul	2	2	EM	melee	2	10	110	1100	0	10	0	2	false	blue	false
-arc blade	3	1	EM	melee	3	12	110	1320	chain: 3	0	0	3	false	blue	false
-ion glaive	3	2	EM	melee	0	8	170	1360	0	10	0	2	true	blue	false
-disruptor blade	4	1	EM, kinetic	melee	2	11	170	1870	0	30	0	2	true	dark blue	false
-arc maul	4	2	EM	melee	-2	7	240	1680	chain: 5	20	0	4	true	blue	false
+ion blade	1	1	EM	melee	5	13	60	780	0	0	0	1	false	cyan	false
+shock batton	1	1	EM	melee	4	11	70	770	0	0	0	1	false	cyan	false
+spark blade	2	1	EM	melee	4	12	80	960	chain: 2	0	0	1	false	cyan	false
+ion maul	2	2	EM	melee	2	10	110	1100	0	10	0	2	false	cyan	false
+arc blade	3	1	EM	melee	3	12	110	1320	chain: 3	0	0	3	false	cyan	false
+ion glaive	3	2	EM	melee	0	8	170	1360	0	10	0	2	true	cyan	false
+disruptor blade	4	1	EM, kinetic	melee	2	11	170	1870	0	30	0	2	true	dark cyan	false
+arc maul	4	2	EM	melee	-2	7	240	1680	chain: 5	20	0	4	true	cyan	false
 claw	1	0	kinetic	melee	4	12	30	360	0	0	0	0	false	grey	true
 weak bite	1	0	kinetic	melee	2	10	30	300	0	0	0	0	false	grey	true
 strong bite	2	0	kinetic	melee	1	8	70	560	0	10	0	1	false	grey	true
