@@ -20,6 +20,7 @@ class Term:
             f"spacing={self.xs}x{self.ys}"
         )
         blt.set(f"gui font: {self.font_path}, size=12")
+        blt.set(f"gui-bold font: {self.bold_font_path}, size=12")
         blt.refresh()
         return self
 

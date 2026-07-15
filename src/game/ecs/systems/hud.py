@@ -9,13 +9,14 @@ class PlayerStats:
     awareness: int; equilibrium: int
     reasoning: int; vigor: int
     armor: int; evasion: int
-    xp_percent: int
+    xp_level: int; xp_percent: int
 
 def get_player_stats(world, player_eid):
     hp = world.get(HP, player_eid)
     oxy = world.get(Oxygen, player_eid)
     abilities = world.get(AbilityScores, player_eid)
     experience = world.get(Experience, player_eid)
+    xp_level = experience.level if experience is not None else 1
     xp_percent = 0
     if experience is not None and experience.next_level > 0:
         xp_percent = round(
@@ -33,6 +34,7 @@ def get_player_stats(world, player_eid):
                 vigor       = abilities.vigor,
                 armor       = equipment_armor_value(world, player_eid),
                 evasion     = evasion(world, player_eid, "ranged"),
+                xp_level    = xp_level,
                 xp_percent  = xp_percent,
             )
     return stats

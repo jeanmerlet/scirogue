@@ -160,6 +160,7 @@ class Oxygen:
 
 @dataclass
 class Experience:
+    level: int = 1
     current: int = 0
     next_level: int = 100
 

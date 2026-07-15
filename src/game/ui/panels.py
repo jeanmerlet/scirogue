@@ -1,5 +1,10 @@
 from .widgets import draw_box, draw_bar, term_print
 
+
+def _stat_print(term, x, y, text):
+    term_print(term, x, y, f"[font=gui-bold]{text}")
+
+
 class SidebarPanel:
     def render(self, term, rect, player_stats):
         draw_box(term, rect)
@@ -11,23 +16,27 @@ class SidebarPanel:
                  player_stats.max_oxy, "dark cyan")
         y += 3
         term.color("white")
-        term_print(
+        _stat_print(
             term, x, y,
             f"AW: {player_stats.awareness:<3} "
             f"EQ: {player_stats.equilibrium}"
         )
         y += 1
-        term_print(
+        _stat_print(
             term, x, y,
             f"RE: {player_stats.reasoning:<3} "
             f"VI: {player_stats.vigor}"
         )
         y += 1
-        term_print(term, x, y, f"Armor: {player_stats.armor}")
+        _stat_print(term, x, y, f"Armor: {player_stats.armor}")
         y += 1
-        term_print(term, x, y, f"Evasion: {player_stats.evasion}")
+        _stat_print(term, x, y, f"Evasion: {player_stats.evasion}")
         y += 1
-        term_print(term, x, y, f"XP: {player_stats.xp_percent} %")
+        _stat_print(
+            term, x, y,
+            f"XL: {player_stats.xp_level} "
+            f"XP: {player_stats.xp_percent} %"
+        )
 
 class LogPanel:
     def render(self, term, rect, log):
