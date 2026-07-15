@@ -21,12 +21,12 @@ def draw_box(term, rect, color="light grey"):
         put(term, x, cy, "║")
         put(term, x+w-1, cy, "║")
 
-def draw_bar(term, x, y, w, cur, maxv, fg, bg="dark grey"):
+def draw_bar(term, font, x, y, w, cur, maxv, fg, bg="dark grey"):
     cur = max(0, min(cur, maxv))
     filled = 0 if maxv <= 0 else int(round((cur / maxv) * w))
     term.color(bg)
-    for i in range(w):
-        put(term, x + i, y, "█")
+    for i in range(w * term.xs - 2):
+        term.print(term.xs * x + i, term.ys * y, f"[font={font}]█")
     term.color(fg)
-    for i in range(filled):
-        put(term, x + i, y, "█")
+    for i in range(filled * term.xs - 2):
+        term.print(term.xs * x + i, term.ys * y, f"[font={font}]█")

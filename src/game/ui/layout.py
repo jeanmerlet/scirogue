@@ -11,7 +11,6 @@ class UILayout:
     sidebar: Rect
     log: Rect
 
-
 @dataclass
 class Camera:
     viewport: Rect
@@ -39,7 +38,7 @@ class Camera:
         )
 
 
-def make_layout(term, map_w=40, map_h=22):
+def make_layout(term, map_w=35, map_h=22):
     map_w = min(map_w, term.w - 2)
     map_h = min(map_h, term.h - 2)
     map_area = Rect(0, 0, map_w, map_h)

@@ -2,58 +2,59 @@ from .widgets import draw_box, draw_bar, term_print
 
 
 def _stat_print(term, x, y, text):
-    term_print(term, x, y, f"[font=gui]{text}")
+    term_print(term, x, y, f"[font=sidebar]{text}")
 
 
 class SidebarPanel:
     def render(self, term, rect, player_stats):
+        font = "sidebar"
+        txt_col = "light blue"
+        val_col = "light grey"
         draw_box(term, rect)
         x, y = rect.x + 1, rect.y + 1
-        draw_bar(term, x, y, rect.w - 2, player_stats.hp,
+        _stat_print(
+            term, x, y,
+            f"[color={txt_col}]Health:[color={val_col}] {player_stats.hp}/{player_stats.max_hp} "
+        )
+        draw_bar(term, font, x+7, y, rect.w-9, player_stats.hp,
                  player_stats.max_hp, "dark red")
-        y += 2
-        draw_bar(term, x, y, rect.w - 2, player_stats.oxy,
+        y += 1
+        _stat_print(
+            term, x, y,
+            f"[color={txt_col}]Oxygen:[color={val_col}] {player_stats.oxy}/{player_stats.max_oxy} "
+        )
+        draw_bar(term, font, x+7, y, rect.w-9, player_stats.oxy,
                  player_stats.max_oxy, "dark cyan")
-        y += 3
-        term.color("light grey")
+        y += 2
         _stat_print(
             term, x, y,
-            f"AW: {player_stats.awareness:<3} "
-            f"EQ: {player_stats.equilibrium}"
+            f"[color={txt_col}]AW:[color={val_col}] {player_stats.awareness:<3} "
+            f"[color={txt_col}]EQ:[color={val_col}] {player_stats.equilibrium:<4}"
+            f"[color={txt_col}]RE:[color={val_col}] {player_stats.reasoning:<3} "
+            f"[color={txt_col}]VI:[color={val_col}] {player_stats.vigor}"
         )
-        y += 1
+        y += 2
         _stat_print(
             term, x, y,
-            f"RE: {player_stats.reasoning:<3} "
-            f"VI: {player_stats.vigor}"
-        )
-        y += 1
-        term.color("dark grey")
-        _stat_print(
-            term, x, y,
-            f"AV: {player_stats.armor:<3} "
-            f"EV: {player_stats.evasion}"
-        )
-        y += 1
-        term.color("white")
-        _stat_print(
-            term, x, y,
-            f"XL: {player_stats.xp_level:<3} "
-            f"XP: {player_stats.xp_percent}%"
+            f"[color={txt_col}]AV:[color={val_col}] {player_stats.armor:<3} "
+            f"[color={txt_col}]EV:[color={val_col}] {player_stats.evasion:<4}"
+            f"[color={txt_col}]XL:[color={val_col}] {player_stats.xp_level:<3} "
+            f"[color={txt_col}]XP:[color={val_col}] {player_stats.xp_percent}%"
         )
 
 class LogPanel:
     def render(self, term, rect, log):
         draw_box(term, rect)
-        x = rect.x * term.xs + 2
-        y = rect.y * term.ys + 1
+        x = rect.x * term.xs + 4
+        y = rect.y * term.ys + 2
         w = rect.w * term.xs - 4
-        h = rect.h * term.ys - 2
+        h = rect.h + 3
         wrapped_msgs = []
         for msg in log.msgs[-h:]:
             wrapped_msgs += log._wrap(msg, w)
         wrapped_msgs = wrapped_msgs[-h:]
         term.color("white")
+        y += 2
         for msg in wrapped_msgs:
-            term.print(x, y, f"[font=gui]{msg}")
-            y += 1
+            term.print(x, y, f"[font=gui]  {msg}")
+            y += 2
