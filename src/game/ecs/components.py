@@ -159,6 +159,11 @@ class Oxygen:
     maximum: int
 
 @dataclass
+class Experience:
+    current: int = 0
+    next_level: int = 100
+
+@dataclass
 class FOVRadius:
     radius: int
 

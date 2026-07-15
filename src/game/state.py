@@ -50,6 +50,7 @@ class PlayState():
         self.world.add(player, Faction("player"))
         self.world.add(player, HP(1000, 1000))
         self.world.add(player, Oxygen(100, 100))
+        self.world.add(player, Experience())
         self.world.add(player, Attack(50))
         self.world.add(player, Speed(1.0))
         self.player = player
