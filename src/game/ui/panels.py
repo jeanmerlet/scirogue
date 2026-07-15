@@ -28,17 +28,17 @@ class SidebarPanel:
         y += 2
         _stat_print(
             term, x, y,
-            f"[color={txt_col}]AW:[color={val_col}] {player_stats.awareness:<3} "
+            f"[color={txt_col}]AW:[color={val_col}] {player_stats.awareness:<4}"
             f"[color={txt_col}]EQ:[color={val_col}] {player_stats.equilibrium:<4}"
-            f"[color={txt_col}]RE:[color={val_col}] {player_stats.reasoning:<3} "
+            f"[color={txt_col}]RE:[color={val_col}] {player_stats.reasoning:<4}"
             f"[color={txt_col}]VI:[color={val_col}] {player_stats.vigor}"
         )
         y += 2
         _stat_print(
             term, x, y,
-            f"[color={txt_col}]AV:[color={val_col}] {player_stats.armor:<3} "
+            f"[color={txt_col}]AV:[color={val_col}] {player_stats.armor:<4}"
             f"[color={txt_col}]EV:[color={val_col}] {player_stats.evasion:<4}"
-            f"[color={txt_col}]XL:[color={val_col}] {player_stats.xp_level:<3} "
+            f"[color={txt_col}]XL:[color={val_col}] {player_stats.xp_level:<4}"
             f"[color={txt_col}]XP:[color={val_col}] {player_stats.xp_percent}%"
         )
 
