@@ -144,13 +144,18 @@ def _log_empty_shot(log, attacker_name):
 
 
 def _fire_weapon(world, game_map, attacker, weapon, target_x, target_y,
-                 log):
+                 log, projectile_callback):
     attacker_pos = world.get(Position, attacker)
     attacker_name = world.get(Name, attacker).text or "something"
+    source = (attacker_pos.x, attacker_pos.y)
+    path = []
     for x, y in _line(
             attacker_pos.x, attacker_pos.y, target_x, target_y):
+        path.append((x, y))
         target = game_map.actors[x, y]
         if target >= 0 and target != attacker:
+            if projectile_callback:
+                projectile_callback(source, path, weapon.color)
             defender_hp = world.get(HP, target)
             if defender_hp is None:
                 _log_blocked_shot(log, attacker_name)
@@ -177,13 +182,18 @@ def _fire_weapon(world, game_map, attacker, weapon, target_x, target_y,
             return
 
         if game_map.block[x, y] or game_map.edge[x, y]:
+            if projectile_callback:
+                projectile_callback(source, path, weapon.color)
             _log_blocked_shot(log, attacker_name)
             return
 
+    if projectile_callback:
+        projectile_callback(source, path, weapon.color)
     _log_empty_shot(log, attacker_name)
 
 
-def fire_ranged(world, game_map, attacker, target_x, target_y, log=None):
+def fire_ranged(world, game_map, attacker, target_x, target_y, log=None,
+                projectile_callback=None):
     """Fire a ranged group, stopping each shot at its first blocker."""
     weapons = attack_weapons(world, attacker, "ranged")
     if not weapons:
@@ -191,6 +201,7 @@ def fire_ranged(world, game_map, attacker, target_x, target_y, log=None):
 
     for weapon in weapons:
         _fire_weapon(
-            world, game_map, attacker, weapon, target_x, target_y, log
+            world, game_map, attacker, weapon, target_x, target_y, log,
+            projectile_callback
         )
     return True

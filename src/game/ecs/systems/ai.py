@@ -23,7 +23,8 @@ def _move_towards(world, eid, tx, ty, game_map, log):
             return True
     return False
 
-def take_monster_turns(world, game_map, player_eid, log):
+def take_monster_turns(world, game_map, player_eid, log,
+                       projectile_callback=None):
     ppos = world.get(Position, player_eid)
     if not ppos: return
     # sort sentient ents by distance from player (closest go first)
@@ -54,7 +55,8 @@ def take_monster_turns(world, game_map, player_eid, log):
             )
             if can_see_player and clear_shot:
                 fire_ranged(
-                    world, game_map, eid, ppos.x, ppos.y, log=log
+                    world, game_map, eid, ppos.x, ppos.y, log=log,
+                    projectile_callback=projectile_callback
                 )
             else:
                 _move_towards(

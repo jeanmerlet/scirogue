@@ -12,6 +12,7 @@ def _weapon_from_data(data):
         accuracy=data["accuracy"],
         attack_speed=data["attack_speed"],
         attack_damage=data["attack_damage"],
+        color=data["color"],
         area=data["area"],
         penetration=data["penetration"],
         recoil=data["recoil"],

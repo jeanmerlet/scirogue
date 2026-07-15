@@ -116,6 +116,7 @@ class Weapon:
     accuracy: int
     attack_speed: int
     attack_damage: int
+    color: str = "white"
     area: str = ""
     penetration: int = 0
     recoil: int = 0

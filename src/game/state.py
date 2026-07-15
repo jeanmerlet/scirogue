@@ -2,7 +2,7 @@ from .ecs.world import World
 from .ecs.components import *
 from .ecs.systems.input import Input
 from .ecs.systems.fov import do_fov
-from .ecs.systems.render import render_all
+from .ecs.systems.render import render_all, animate_projectile
 from .ecs.systems.ai import take_monster_turns
 from .ecs.systems.movement import try_move
 from .ecs.systems.combat import fire_ranged
@@ -107,6 +107,11 @@ class PlayState():
         self.logpanel.render(self.term, self.layout.log, self.log)
         self.term.refresh()
 
+    def _animate_projectile(self, source, path, color):
+        animate_projectile(
+            self.term, self.world, self.map, source, path, color
+        )
+
     def _handle_player_cmd(self, cmd):
         if not cmd: return self
         match cmd[0]:
@@ -195,7 +200,10 @@ class PlayState():
         cmd = self.input.poll(self.term)
         state = self._handle_player_cmd(cmd)
         if self.turn_taken:
-            take_monster_turns(self.world, self.map, self.player, self.log)
+            take_monster_turns(
+                self.world, self.map, self.player, self.log,
+                projectile_callback=self._animate_projectile
+            )
         return state
 
 class MenuState():
@@ -361,6 +369,11 @@ class TargetState():
         self.term.composition_off()
         self.term.refresh()
 
+    def _animate_projectile(self, source, path, color):
+        animate_projectile(
+            self.term, self.world, self.map, source, path, color
+        )
+
     def tick(self):
         self._render()
         cmd = self.input.poll(self.term)
@@ -382,14 +395,16 @@ class TargetState():
             selected_target = self._target_at_cursor()
             if not fire_ranged(
                     self.world, self.map, self.player, self.x, self.y,
-                    self.prev_state.log):
+                    self.prev_state.log,
+                    projectile_callback=self._animate_projectile):
                 return self.prev_state
             if selected_target in self._visible_enemies():
                 self.prev_state.ranged_target = selected_target
             else:
                 self.prev_state.ranged_target = None
             take_monster_turns(
-                self.world, self.map, self.player, self.prev_state.log
+                self.world, self.map, self.player, self.prev_state.log,
+                projectile_callback=self._animate_projectile
             )
             return self.prev_state
         elif cmd[0] == "quit":
