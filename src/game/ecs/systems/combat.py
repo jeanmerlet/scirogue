@@ -94,6 +94,23 @@ def _line(x0, y0, x1, y1):
         yield x0, y0
 
 
+def _visible_ray(game_map, x0, y0, through_x, through_y):
+    """Yield a ray through a target tile to the visible-range boundary."""
+    dx = through_x - x0
+    dy = through_y - y0
+    if dx == 0 and dy == 0:
+        return
+    scale = max(game_map.w, game_map.h) * 2
+    far_x = x0 + dx * scale
+    far_y = y0 + dy * scale
+    for x, y in _line(x0, y0, far_x, far_y):
+        if not game_map.in_bounds(x, y):
+            return
+        if not game_map.visible[x, y]:
+            return
+        yield x, y
+
+
 def _log_ranged_result(log, attacker_name, defender_name, hit, damage=0):
     if not log:
         return
@@ -149,15 +166,17 @@ def _fire_weapon(world, game_map, attacker, weapon, target_x, target_y,
     attacker_name = world.get(Name, attacker).text or "something"
     source = (attacker_pos.x, attacker_pos.y)
     path = []
-    for x, y in _line(
-            attacker_pos.x, attacker_pos.y, target_x, target_y):
+    missed_actor = False
+    for x, y in _visible_ray(
+            game_map, attacker_pos.x, attacker_pos.y,
+            target_x, target_y):
         path.append((x, y))
         target = game_map.actors[x, y]
         if target >= 0 and target != attacker:
-            if projectile_callback:
-                projectile_callback(source, path, weapon.color)
             defender_hp = world.get(HP, target)
             if defender_hp is None:
+                if projectile_callback:
+                    projectile_callback(source, path, weapon.color)
                 _log_blocked_shot(log, attacker_name)
                 return
             defender_name = world.get(Name, target).text or "something"
@@ -168,7 +187,10 @@ def _fire_weapon(world, game_map, attacker, weapon, target_x, target_y,
                 _log_ranged_result(
                     log, attacker_name, defender_name, False
                 )
-                return
+                missed_actor = True
+                continue
+            if projectile_callback:
+                projectile_callback(source, path, weapon.color)
             damage = calculate_damage(
                 world, attacker, target, "ranged", game_map.rng,
                 weapon=weapon
@@ -189,7 +211,8 @@ def _fire_weapon(world, game_map, attacker, weapon, target_x, target_y,
 
     if projectile_callback:
         projectile_callback(source, path, weapon.color)
-    _log_empty_shot(log, attacker_name)
+    if not missed_actor:
+        _log_empty_shot(log, attacker_name)
 
 
 def fire_ranged(world, game_map, attacker, target_x, target_y, log=None,
