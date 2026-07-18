@@ -6,6 +6,10 @@ class Term:
         self.bold_font_path = "../assets/fonts/CourierPrime-Bold.ttf"
         self.xs = 8
         self.ys = 4
+        self.gui_xs = 2
+        self.gui_ys = 1
+        self.sidebar_xs = 3
+        self.sidebar_ys = 2
         self.w = 50
         self.h = 30
 
@@ -19,8 +23,14 @@ class Term:
             f"bold font: {self.bold_font_path}, size=32, "
             f"spacing={self.xs}x{self.ys}"
         )
-        blt.set(f"gui font: {self.font_path}, size=12, spacing=2x1")
-        blt.set(f"sidebar font: {self.font_path}, size=16, spacing=3x2")
+        blt.set(
+            f"gui font: {self.font_path}, size=12, "
+            f"spacing={self.gui_xs}x{self.gui_ys}"
+        )
+        blt.set(
+            f"sidebar font: {self.font_path}, size=16, "
+            f"spacing={self.sidebar_xs}x{self.sidebar_ys}"
+        )
         blt.refresh()
         return self
 
