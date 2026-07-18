@@ -5,23 +5,24 @@ import time
 PROJECTILE_FRAME_SECONDS = 0.025
 
 def render_tiles(term, tiles, vis, expl, vis_color, xs, ys, ch, camera):
-    x0, y0 = camera.x, camera.y
-    x1 = min(camera.map_w, x0 + camera.viewport.w)
-    y1 = min(camera.map_h, y0 + camera.viewport.h)
+    x0 = max(0, camera.x)
+    y0 = max(0, camera.y)
+    x1 = max(x0, min(camera.map_w, camera.x + camera.viewport.w))
+    y1 = max(y0, min(camera.map_h, camera.y + camera.viewport.h))
     tiles = tiles[x0:x1, y0:y1]
     vis = vis[x0:x1, y0:y1]
     expl = expl[x0:x1, y0:y1]
     term.color(vis_color)
     all_x, all_y = np.nonzero(tiles & vis)
     for x, y in zip(all_x, all_y):
-        screen_x = camera.viewport.x + int(x)
-        screen_y = camera.viewport.y + int(y)
+        screen_x = camera.viewport.x + x0 - camera.x + int(x)
+        screen_y = camera.viewport.y + y0 - camera.y + int(y)
         term.put(xs * screen_x, ys * screen_y, ch)
     term.color("darker grey")
     all_x, all_y = np.nonzero(tiles & ~vis & expl)
     for x, y in zip(all_x, all_y):
-        screen_x = camera.viewport.x + int(x)
-        screen_y = camera.viewport.y + int(y)
+        screen_x = camera.viewport.x + x0 - camera.x + int(x)
+        screen_y = camera.viewport.y + y0 - camera.y + int(y)
         term.put(xs * screen_x, ys * screen_y, ch)
 
 def render_entities(term, world, z_level, vis, expl, xs, ys, camera):
