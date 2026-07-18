@@ -77,11 +77,11 @@ def equip_item(world, actor_eid, item_eid, log):
             _occupy_two_hands(inv, equip, item_eid, name, log)
             return True
         elif (equip.slots["hand1"] is not None and
-              unequip_slot(world, actor_eid, "hand1")):
+              unequip_slot(world, actor_eid, "hand1", log)):
             _occupy_two_hands(inv, equip, item_eid, name, log)
             return True
         elif (equip.slots["hand2"] is not None and
-              unequip_slot(world, actor_eid, "hand2")):
+              unequip_slot(world, actor_eid, "hand2", log)):
             _occupy_two_hands(inv, equip, item_eid, name, log)
             return True
         else:
@@ -95,7 +95,7 @@ def equip_item(world, actor_eid, item_eid, log):
             return True
         else:
             #TODO: two turns taken for unequip + equip
-            if unequip_slot(world, actor_eid, slot):
+            if unequip_slot(world, actor_eid, slot, log):
                 inv.items.remove(item_eid)
                 equip.slots[slot] = item_eid
                 log.add(f"You equip the {name}.")
