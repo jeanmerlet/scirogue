@@ -15,7 +15,7 @@ from .data.items import ITEM_KEYS
 from .ui.layout import Camera, make_layout
 from .ui.panels import SidebarPanel, LogPanel
 from .ui.widgets import clear_area
-from .ui.description import draw_inspect
+from .ui.text_boxes import draw_inspect
 from .services.log import MessageLog
 from .menu import *
 import numpy as np
