@@ -84,7 +84,7 @@ def _render_desc(term, title_text, title_color, description):
 
     for line in _description_lines(term, description, rect):
         _gui_print(term, content_x, content_y, line)
-        content_y += term.gui_ys
+        content_y += term.gui_line_ys
     term.refresh()
 
 
@@ -109,8 +109,8 @@ def _menu_size(term, title, lines, content_width):
     width = ceil(inner_chars * term.gui_xs / term.xs) + 2
 
     title_height = term.ys
-    entries_height = max(1, len(lines)) * term.gui_ys
-    inner_height = title_height + term.gui_ys + entries_height
+    entries_height = max(1, len(lines)) * term.gui_line_ys
+    inner_height = title_height + term.gui_line_ys + entries_height
     height = ceil(inner_height / term.ys) + 2
     return width, height
 
@@ -126,5 +126,5 @@ def draw_menu(term, title, lines, content_width, selected_idx):
         if i == selected_idx:
             _gui_print(term, cursor_x, content_y, ">")
         _gui_print(term, line_x, content_y, line)
-        content_y += term.gui_ys
+        content_y += term.gui_line_ys
     term.refresh()
