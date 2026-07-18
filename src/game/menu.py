@@ -2,8 +2,7 @@ from .ecs.systems.input import Input
 from .ecs.systems.render import render_all
 from .ecs.systems.inventory import drop, equip_item, unequip_slot
 from .ecs.components import *
-from .ui.render_menu import draw_menu
-from .ui.description import render_desc, render_tile_desc
+from .ui.text_boxes import draw_menu, render_desc, render_tile_desc
 from .ui.widgets import clear_area
 
 class DescMenu():
