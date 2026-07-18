@@ -20,10 +20,8 @@ class Camera:
     y: int = 0
 
     def center_on(self, world_x, world_y):
-        max_x = max(0, self.map_w - self.viewport.w)
-        max_y = max(0, self.map_h - self.viewport.h)
-        self.x = max(0, min(world_x - self.viewport.w // 2, max_x))
-        self.y = max(0, min(world_y - self.viewport.h // 2, max_y))
+        self.x = world_x - self.viewport.w // 2
+        self.y = world_y - self.viewport.h // 2
 
     def contains(self, world_x, world_y):
         return (
