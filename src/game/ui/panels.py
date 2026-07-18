@@ -9,6 +9,9 @@ class SidebarPanel:
     def render(self, term, rect, player_stats):
         font = "sidebar"
         txt_col = "light blue"
+        att_col = "light blue"
+        def_col = "white"
+        xp_col = "amber"
         val_col = "light grey"
         draw_box(term, rect)
         x, y = rect.x + 1, rect.y + 1
@@ -28,18 +31,28 @@ class SidebarPanel:
         y += 2
         _stat_print(
             term, x, y,
-            f"[color={txt_col}]AW:[color={val_col}] {player_stats.awareness:<4}"
-            f"[color={txt_col}]EQ:[color={val_col}] {player_stats.equilibrium:<4}"
-            f"[color={txt_col}]RE:[color={val_col}] {player_stats.reasoning:<4}"
-            f"[color={txt_col}]VI:[color={val_col}] {player_stats.vigor}"
+            f"[color={att_col}]AW:[color={val_col}] {player_stats.awareness:<4}"
+            f"[color={att_col}]EQ:[color={val_col}] {player_stats.equilibrium:<4}"
+            f"[color={att_col}]RE:[color={val_col}] {player_stats.reasoning:<4}"
+            f"[color={att_col}]VI:[color={val_col}] {player_stats.vigor}"
+        )
+        y += 1
+        _stat_print(
+            term, x, y,
+            f"[color={def_col}]AV:[color={val_col}] {player_stats.armor:<4}"
+            f"[color={def_col}]EV:[color={val_col}] {player_stats.evasion:<4}"
+            f"[color={xp_col}]XL:[color={val_col}] {player_stats.xp_level:<4}"
+            f"[color={xp_col}]XP:[color={val_col}] {player_stats.xp_percent}%"
         )
         y += 2
         _stat_print(
             term, x, y,
             f"[color={txt_col}]AV:[color={val_col}] {player_stats.armor:<4}"
-            f"[color={txt_col}]EV:[color={val_col}] {player_stats.evasion:<4}"
-            f"[color={txt_col}]XL:[color={val_col}] {player_stats.xp_level:<4}"
-            f"[color={txt_col}]XP:[color={val_col}] {player_stats.xp_percent}%"
+        )
+        y += 1
+        _stat_print(
+            term, x, y,
+            f"[color={txt_col}]AV:[color={val_col}] {player_stats.armor:<4}"
         )
 
 class LogPanel:
