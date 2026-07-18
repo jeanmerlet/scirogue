@@ -8,6 +8,7 @@ class Term:
         self.ys = 4
         self.gui_xs = 2
         self.gui_ys = 1
+        self.gui_line_ys = 2
         self.sidebar_xs = 3
         self.sidebar_ys = 2
         self.w = 50
