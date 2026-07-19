@@ -79,17 +79,54 @@ def _load_armor():
     return armor
 
 
+def _load_consumables():
+    consumables = {}
+    for row in _read_tsv("consumables.tsv"):
+        key = row["consumable_base"].strip()
+        if key in consumables:
+            raise ValueError(f"Duplicate consumable_base: {key!r}")
+        category = row["category"].strip().lower()
+        if category not in {"autoinjector", "grenade"}:
+            raise ValueError(
+                f"Unknown consumable category for {key!r}: {category!r}"
+            )
+        consumables[key] = {
+            "kind": "consumable",
+            "name": row["name"].strip(),
+            "desc": row["desc"].strip(),
+            "ch": "!" if category == "autoinjector" else "*",
+            "color": row["color"].strip(),
+            "stackable": True,
+            "category": category,
+            "effect_id": row["effect_id"].strip().lower(),
+            "charges": int(row["charges"]),
+            "amount": int(row["amount"]),
+            "damage_type": row["dmg_type"].strip().lower(),
+            "radius": int(row["radius"]),
+            "duration": int(row["duration"]),
+            "after_duration": int(row["after_duration"]),
+            "destructs_tiles": _parse_bool(row["destructs_tiles"]),
+        }
+    return consumables
+
+
 WEAPONS = _load_weapons()
 ARMOR = _load_armor()
+CONSUMABLES = _load_consumables()
 
-duplicate_names = WEAPONS.keys() & ARMOR.keys()
+catalogs = (WEAPONS, ARMOR, CONSUMABLES)
+duplicate_names = set()
+for index, catalog in enumerate(catalogs):
+    for other in catalogs[index + 1:]:
+        duplicate_names.update(catalog.keys() & other.keys())
 if duplicate_names:
     duplicates = ", ".join(sorted(duplicate_names))
-    raise ValueError(f"Duplicate equipment names across catalogs: {duplicates}")
+    raise ValueError(f"Duplicate item names across catalogs: {duplicates}")
 
 ITEMS = {
     name: data for name, data in WEAPONS.items()
     if not data["natural"]
 }
 ITEMS.update(ARMOR)
+ITEMS.update(CONSUMABLES)
 ITEM_KEYS = tuple(ITEMS)
