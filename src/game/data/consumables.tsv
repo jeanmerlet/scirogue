@@ -1,0 +1,7 @@
+consumable_base	name	category	effect_id	charges	amount	dmg_type	radius	duration	after_duration	destructs_tiles	color	desc
+mend	Medical Emergency Nanite Dose (MEND)	autoinjector	mend	1	25		0	0	0	false	light green	A disposable autoinjector filled with medical nanites that rapidly repair injuries.
+rage	Rapid-Acting Genetically Engineered Epinephrine (RAGE)	autoinjector	rage	1	0		0	5	3	false	amber	A combat stimulant that temporarily increases melee damage and movement speed, followed by a period of reduced movement speed.
+air	Automated Intravenous Re-oxygenator (AIR)	autoinjector	air	1	50		0	0	0	false	cyan	A disposable autoinjector that rapidly replenishes the user's oxygen supply.
+frag grenade	frag grenade	grenade	frag_grenade	1	20	kinetic	1	0	0	true	grey	A single-use fragmentation grenade with a small, destructive blast radius.
+EMP grenade	EMP grenade	grenade	emp_grenade	1	10	em	3	0	0	false	cyan	A single-use electromagnetic grenade with a wide blast radius.
+thermal grenade	thermal grenade	grenade	thermal_grenade	1	14	thermal	2	2	0	false	red	A single-use incendiary grenade that leaves a short-lived thermal hazard.
