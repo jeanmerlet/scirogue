@@ -50,4 +50,6 @@ arc maul	4	2	EM	melee	-2	7	24	168	chain: 5	2	0	4	true	cyan	false
 claw	1	0	kinetic	melee	4	12	3	36	0	0	0	0	false	grey	true
 weak bite	1	0	kinetic	melee	2	10	3	30	0	0	0	0	false	grey	true
 strong bite	2	0	kinetic	melee	1	8	7	56	0	1	0	1	false	grey	true
-acid spit	2	0	thermal	ranged	1	8	5	40	0	0	0	1	false	red	true
+acid spit	2	0	thermal	ranged	1	8	5	40	0	0	0	1	true	red	true
+heavy claw	3	0	kinetic	melee	2	8	10	80	0	2	0	1	false	grey	true
+stinger	4	0	kinetic	melee	1	8	14	112	0	2	0	1	false	grey	true
