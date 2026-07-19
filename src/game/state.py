@@ -90,8 +90,9 @@ class PlayState():
             for _ in range(num):
                 x, y = self.rng.choice(list(r.inside()))
                 if not self.map.blocked(x, y):
-                    kind = self.rng.choice(["skitterling", "skittermaw",
-                                            "skitterseer"])
+                    kind = self.rng.choice([
+                        "skitterling", "mantis", "blightmoth"
+                    ])
                     eid = spawn_actor(self.world, kind, x, y, z)
                     self.map.actors[x, y] = eid
 
