@@ -106,6 +106,14 @@ class Item:
 @dataclass
 class Consumable:
     effect_id: str
+    category: str = ""
+    charges: int = 1
+    amount: int = 0
+    damage_type: str = ""
+    radius: int = 0
+    duration: int = 0
+    after_duration: int = 0
+    destructs_tiles: bool = False
 
 @dataclass
 class Equippable:
