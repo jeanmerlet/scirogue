@@ -1,7 +1,7 @@
 actor_base	name	faction	role	ch	color	desc	hp	speed	ai_type	flying	melee	ranged	dodge	mitigation	armor_value	kinetic_res	thermal_res	em_res	melee_attacks	ranged_attacks	spawns_actor	spawns_group
-skitterling	Skitterling	swarm	grunt	s	purple	A small, fast scuttling Swarm alien.	4	1.5	melee	false	2	0	4	0	0	0.0	0.0	0.0	claw|claw			
-mantis	Mantis	swarm	standard	m	purple	A powerful Swarm predator with heavy, penetrative jaws.	12	1.0	melee	false	4	0	1	2	1	0.05	0.0	0.0	strong bite			
-blightmoth	Blightmoth	swarm	standard	b	purple	A slow flying Swarm alien that spits hull-eating acid.	6	0.75	ranged	true	0	3	3	0	1	0.0	0.0	0.0		acid spit		
-dread mantis	Dread mantis	swarm	elite	D	dark purple	A heavily armored Swarm hunter with massive cutting claws.	20	1.0	melee	false	6	0	2	4	3	0.10	0.05	0.0	heavy claw|heavy claw			
-broodqueen	Broodqueen	swarm	apex	Q	dark purple	A towering Swarm matriarch that seeds the battlefield with egg sacs.	32	1.0	spawner	false	5	0	0	3	2	0.10	0.05	0.05	stinger		egg sac	
-egg sac	Egg sac	swarm	nest	o	purple	A pulsing Swarm egg sac. Something is growing inside.	8	0.0	stationary	false	0	0	0	0	1	0.0	0.0	0.0				swarm
+skitterling	Skitterling	swarm	grunt	s	purple	A small, scuttling alien with many sharp legs that typically hunts in packs.	4	1.5	melee	false	2	0	4	0	0	0.0	0.0	0.0	claw|claw			
+mantis	Mantis	swarm	standard	m	purple	An alien predator that resembles a human-sized, purple praying mantis with huge jaws.	12	1.0	melee	false	4	0	1	2	1	0.05	0.0	0.0	strong bite			
+blightmoth	Blightmoth	swarm	standard	b	purple	A slow, flying alien that spits hull-eating acid. It commands swarms of skitterlings from the back.	6	0.75	ranged	true	0	3	3	0	1	0.0	0.0	0.0		acid spit		
+dread mantis	Dread mantis	swarm	elite	D	dark purple	A heavily armored mantis, scarred from numerous engagements. Its two forelimbs have evolved into wickedly sharp, scythe-like pincers.	20	1.0	melee	false	6	0	2	4	3	0.10	0.05	0.0	heavy claw|heavy claw			
+broodqueen	Broodqueen	swarm	apex	Q	dark purple	A supreme alien commander, resembling an engorged scorpion. Her stinger is filled with deadly venom, and she seeds the battlefield with egg sacs.	32	1.0	spawner	false	5	0	0	3	2	0.10	0.05	0.05	stinger		egg sac	
+egg sac	Egg sac	swarm	nest	o	purple	A pulsing alien egg sac. Something is growing inside.	8	0.0	stationary	false	0	0	0	0	1	0.0	0.0	0.0				swarm
