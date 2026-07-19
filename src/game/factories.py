@@ -1,5 +1,5 @@
-from .data.actors import ACTORS
 from .data.items import ITEMS, WEAPONS
+from .data.actors import ACTORS
 from .ecs.components import *
 
 def _weapon_from_data(data):
@@ -30,7 +30,14 @@ def spawn_actor(world, key, x, y, z):
     world.add(eid, Blocks())
     world.add(eid, Actor())
     world.add(eid, Faction(data["faction"]))
-    world.add(eid, AI())
+    world.add(eid, AI(data["ai_type"]))
+    if data["flying"]:
+        world.add(eid, Flying())
+    if data["spawns_actor"] or data["spawns_group"]:
+        world.add(eid, Spawner(
+            actor_key=data["spawns_actor"],
+            spawn_group=data["spawns_group"]
+        ))
     world.add(eid, HP(data["hp"], data["hp"]))
     world.add(eid, CombatStats(
         melee=data["melee"],
@@ -49,8 +56,6 @@ def spawn_actor(world, key, x, y, z):
         ]
         for group, attack_names in data["attack_groups"].items()
     }))
-    # Keep fixed damage working until combat.py uses CombatStats/Attacks.
-    world.add(eid, Attack(data["attack"]))
     world.add(eid, Speed(data["speed"]))
     return eid
 
