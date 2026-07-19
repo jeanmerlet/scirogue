@@ -40,6 +40,8 @@ def take_monster_turns(world, game_map, player_eid, log,
     for eid, pos in batch:
         if eid == player_eid: continue
         if not world.has(eid, AI): continue
+        if world.get(AI, eid).kind == "stationary":
+            continue
         if _adjacent(pos.x, pos.y, ppos.x, ppos.y):
             dx, dy = ppos.x - pos.x, ppos.y - pos.y
             try_move(world, eid, dx, dy, game_map, log=log)
