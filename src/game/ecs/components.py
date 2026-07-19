@@ -60,7 +60,16 @@ class Description:
 
 @dataclass
 class AI:
+    kind: str = "standard"
+
+@dataclass
+class Flying:
     pass
+
+@dataclass
+class Spawner:
+    actor_key: str = ""
+    spawn_group: str = ""
 
 # --- Inventory / Equipment --- #
 
