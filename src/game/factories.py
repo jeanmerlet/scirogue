@@ -86,7 +86,17 @@ def spawn_item(world, key, x, y, z):
             noise=data["noise"]
         ))
     elif data["kind"] == "consumable":
-        world.add(eid, Consumable(data["effect_id"]))
+        world.add(eid, Consumable(
+            effect_id=data["effect_id"],
+            category=data["category"],
+            charges=data["charges"],
+            amount=data["amount"],
+            damage_type=data["damage_type"],
+            radius=data["radius"],
+            duration=data["duration"],
+            after_duration=data["after_duration"],
+            destructs_tiles=data["destructs_tiles"]
+        ))
 
     return eid
 
