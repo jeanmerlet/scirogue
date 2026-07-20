@@ -45,7 +45,6 @@ class Menu():
         self.log = log
         self.prev_state = prev_state
         self.camera = prev_state.camera
-        self.prev_state.turn_taken = False
         self.sel_idx = 0
         self.letters = False
         self.numbers = False
@@ -142,7 +141,7 @@ class DropMenu(InventoryMenu):
         if idx < num_items:
             item = items[idx]
             if drop(self.world, self.map, self.player, item, self.log):
-                self.prev_state.turn_taken = True
+                self.prev_state.spend_player_time()
                 return self.prev_state
         return False
 
@@ -158,7 +157,7 @@ class EquipMenu(InventoryMenu):
         if idx < num_items:
             item = items[idx]
             if equip_item(self.world, self.player, item, self.log):
-                self.prev_state.turn_taken = True
+                self.prev_state.spend_player_time()
                 return self.prev_state
         return False
 
@@ -256,6 +255,6 @@ class UnequipMenu(EquipmentMenu):
         if idx < num_slots:
             slot = idx_map[idx]
             if unequip_slot(self.world, self.player, slot, self.log):
-                self.prev_state.turn_taken = True
+                self.prev_state.spend_player_time()
             return self.prev_state
         return False
