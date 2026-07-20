@@ -7,6 +7,11 @@ from .ecs.systems.ai import take_monster_turns
 from .ecs.systems.movement import try_move
 from .ecs.systems.combat import fire_ranged
 from .ecs.systems.combat_calculations import attack_weapon
+from .ecs.systems.scheduler import (
+    ActionClock,
+    STANDARD_ACTION_COST,
+    player_attack_cost,
+)
 from .ecs.systems.hud import get_player_stats
 from .ecs.systems.inventory import pick_up, drop, equip_item, unequip_slot, use_consumable
 from .map.derelict import Derelict
@@ -54,7 +59,7 @@ class PlayState():
         self.world.add(player, Attack(5))
         self.world.add(player, Speed(1.0))
         self.player = player
-        self.turn_taken = False
+        self.action_clock = ActionClock()
         self.ranged_target = None
         self.show_all = False
         self.derelict = Derelict(self.rng)
@@ -123,17 +128,43 @@ class PlayState():
             source, path, color
         )
 
+    def spend_player_time(self, cost=STANDARD_ACTION_COST):
+        self._center_camera()
+        for _ in range(self.action_clock.spend(cost)):
+            take_monster_turns(
+                self.world, self.map, self.player, self.log,
+                projectile_callback=self._animate_projectile
+            )
+            player_hp = self.world.get(HP, self.player)
+            if player_hp is not None and player_hp.current <= 0:
+                break
+
+    def _move_action_cost(self, dx, dy):
+        pos = self.world.get(Position, self.player)
+        nx, ny = pos.x + dx, pos.y + dy
+        if not self.map.in_bounds(nx, ny):
+            return STANDARD_ACTION_COST
+        target = self.map.actors[nx, ny]
+        if target < 0:
+            return STANDARD_ACTION_COST
+        player_faction = self.world.get(Faction, self.player).tag
+        target_faction = self.world.get(Faction, target)
+        if target_faction is None or target_faction.tag == player_faction:
+            return STANDARD_ACTION_COST
+        return player_attack_cost(self.world, self.player, "melee")
+
     def _handle_player_cmd(self, cmd):
         if not cmd: return self
         match cmd[0]:
             case "move":
                 _, dx, dy = cmd
+                action_cost = self._move_action_cost(dx, dy)
                 if try_move(self.world, self.player, dx, dy, self.map,
                             self.log):
-                    self.turn_taken = True
+                    self.spend_player_time(action_cost)
                 return self
             case "wait":
-                self.turn_taken = True
+                self.spend_player_time()
                 return self
             case "pick_up":
                 pos = self.world.get(Position, self.player)
@@ -145,14 +176,14 @@ class PlayState():
                     item = items_xy[0]
                     if pick_up(self.world, self.map, self.player, item,
                                self.log):
-                        self.turn_taken = True
+                        self.spend_player_time()
                     return self
                 else:
                     # TODO: pick up menu needed if more than one item
                     item = items_xy[0]
                     if pick_up(self.world, self.map, self.player, item,
                                self.log):
-                        self.turn_taken = True
+                        self.spend_player_time()
                     return self
             case "inspect":
                 return InspectState(self.term, self.world, self.map,
@@ -205,20 +236,12 @@ class PlayState():
         self.camera.map_h = self.map.h
         pos.x, pos.y, pos.z = x, y, new_z
         self.map.actors[pos.x, pos.y] = self.player
-        self.turn_taken = True
+        self.spend_player_time()
 
     def tick(self):
         self._render()
-        self.turn_taken = False
         cmd = self.input.poll(self.term)
-        state = self._handle_player_cmd(cmd)
-        if self.turn_taken:
-            self._center_camera()
-            take_monster_turns(
-                self.world, self.map, self.player, self.log,
-                projectile_callback=self._animate_projectile
-            )
-        return state
+        return self._handle_player_cmd(cmd)
 
 class MenuState():
     def __init__(self, term):
@@ -243,7 +266,6 @@ class InspectState():
         self._update_target()
         self.prev_state = prev_state
         self.camera = prev_state.camera
-        self.prev_state.turn_taken = False
 
     def _update_target(self):
         ents = self.map.inspectable_ents_at(self.world, self.x, self.y)
@@ -317,7 +339,6 @@ class TargetState():
         self.player = player
         self.prev_state = prev_state
         self.camera = prev_state.camera
-        self.prev_state.turn_taken = False
         player_pos = self.world.get(Position, self.player)
         self.targets = self._visible_enemies()
         remembered = self.prev_state.ranged_target
@@ -420,6 +441,9 @@ class TargetState():
                 self.prev_state.log.add("Select a target.")
                 return self
             selected_target = self._target_at_cursor()
+            action_cost = player_attack_cost(
+                self.world, self.player, "ranged"
+            )
             if not fire_ranged(
                     self.world, self.map, self.player, self.x, self.y,
                     self.prev_state.log,
@@ -429,10 +453,7 @@ class TargetState():
                 self.prev_state.ranged_target = selected_target
             else:
                 self.prev_state.ranged_target = None
-            take_monster_turns(
-                self.world, self.map, self.player, self.prev_state.log,
-                projectile_callback=self._animate_projectile
-            )
+            self.prev_state.spend_player_time(action_cost)
             return self.prev_state
         elif cmd[0] == "quit":
             return self.prev_state
